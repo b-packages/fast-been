@@ -11,5 +11,8 @@ setup(
     # url='',
     # keywords='',
     install_requires=[
+        'fastapi',
+        'pydantic',
+        'SQLAlchemy',
     ],
 )
