@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='beensi_framework',
-    version='0.1',
+    version='0.001',
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
