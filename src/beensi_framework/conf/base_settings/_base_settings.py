@@ -1,21 +1,15 @@
 from functools import lru_cache
+from pydantic import BaseSettings as BSettings
 
-from pydantic import (
-    BaseSettings as BSettings,
-    BaseModel as BModel,
-)
-
-
-class _JWTConf(BModel):
-    SECRET_KEY: str = '********'
-    ALGORITHM: str = 'HS256'
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+from ._jwt_cof_schema import _JWTConf
 
 
 class BaseSettings(BSettings):
+    DEBUG: bool = True
     SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
-    DEBUG: bool = True
+    UTC_TIME = True
+
     JWT_CONF: _JWTConf = _JWTConf()
 
     class Config:

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base as d_base
 from sqlalchemy.orm import sessionmaker
-from .base_settings import BASE_SETTINGS
+from beensi_framework.conf.base_settings import BASE_SETTINGS
 
 engine = create_engine(
     BASE_SETTINGS.SQLALCHEMY_DATABASE_URL,
