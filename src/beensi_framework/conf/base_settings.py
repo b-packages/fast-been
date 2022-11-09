@@ -7,13 +7,13 @@ from pydantic import (
 
 
 class _JWTConf(BModel):
-    SECRET_KEY: str = 'SECRET_KEY'
+    SECRET_KEY: str = '********'
     ALGORITHM: str = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
 
 class BaseSettings(BSettings):
-    SECRET_KEY: str = 'SECRET_KEY'
+    SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
     DEBUG: bool = True
     JWT_CONF: _JWTConf = _JWTConf()
