@@ -16,7 +16,7 @@ session_local = sessionmaker(
     bind=engine,
 )
 
-declarative_base = d_base()
+Model = d_base()
 
 
 # Dependency
