@@ -43,16 +43,17 @@ class Base(object):
         tmp = hash_row_db(tmp)
         return tmp
 
-    def set_controller_fields(self):
-        self.__set_id()
-        self.__set_create_datetime()
-        self.__set_is_active()
-        self.__set_hashed()
-
     @classmethod
-    def create(cls, db, **kwargs):
-        obj = cls(**kwargs)
-        obj.set_controller_fields()
+    def create_object(cls, *args, **kwargs):
+        obj = cls(*args, **kwargs)
+        obj.__set_id()
+        obj.__set_create_datetime()
+        obj.__set_is_active()
+        return obj
+
+    def create(self, db, *args, **kwargs):
+        obj = self.create_object(*args, **kwargs)
+        self.__set_hashed()
         db.add(obj)
         db.commit()
         db.referesh(obj)
