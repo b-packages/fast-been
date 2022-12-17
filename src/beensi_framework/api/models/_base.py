@@ -1,6 +1,6 @@
 import json
 
-from sqlalchemy import Boolean, Column, String, DateTime, TEXT
+from sqlalchemy import Integer, Boolean, Column, String, DateTime, TEXT
 
 from beensi_framework.utils.generators.db.id import unique_id
 from beensi_framework.utils.hahsings import hash_row_db
@@ -8,13 +8,14 @@ from beensi_framework.utils.date_time import now
 
 
 class Base(object):
-    id = Column(String(255), primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    pid = Column(String(255), index=True)
     create_datetime = Column(DateTime())
     hashed = Column(TEXT())
     is_active = Column(Boolean())
 
-    def __set_id(self):
-        self.id = unique_id()
+    def __set_pid(self):
+        self.pid = unique_id()
 
     def __set_create_datetime(self):
         self.create_datetime = now()
@@ -25,10 +26,19 @@ class Base(object):
     def __set_is_active(self):
         self.is_active = True
 
-    def to_dict(self):
+    def _to_dict(self):
         tmp = dict()
         for column in self.__table__.columns:
+            if column.name == 'hashed':
+                continue
             tmp[column.name] = str(getattr(self, column.name))
+        return tmp
+
+    def to_dict(self):
+        tmp = self._to_dict().copy()
+        tmp.pop('id')
+        tmp.pop('create_datetime')
+        tmp.pop('is_active')
         return tmp
 
     def to_json(self):
@@ -37,24 +47,7 @@ class Base(object):
         return tmp
 
     def hash(self):
-        tmp = self.to_dict()
-        tmp.pop('is_active')
+        tmp = self._to_dict()
         tmp = json.dumps(tmp)
         tmp = hash_row_db(tmp)
         return tmp
-
-    @classmethod
-    def create_object(cls, *args, **kwargs):
-        obj = cls(*args, **kwargs)
-        obj.__set_id()
-        obj.__set_create_datetime()
-        obj.__set_is_active()
-        return obj
-
-    def create(self, db, *args, **kwargs):
-        obj = self.create_object(*args, **kwargs)
-        self.__set_hashed()
-        db.add(obj)
-        db.commit()
-        db.referesh(obj)
-        return obj
