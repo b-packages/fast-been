@@ -1,7 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import NUMERIC
 
 from . import BaseField
-from beensi_framework.utils.macros import NUMERIC
 
 
 class NumericField(BaseField):

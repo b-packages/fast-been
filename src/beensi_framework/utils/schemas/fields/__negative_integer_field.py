@@ -1,7 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import MAX_VALUE, NEGATIVE_INTEGER
 
 from . import IntegerField
-from beensi_framework.utils.macros import MAX_VALUE, NEGATIVE_INTEGER
 
 
 class NegativeIntegerField(IntegerField):

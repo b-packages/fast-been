@@ -1,7 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import INTEGER
 
 from . import NumericField
-from beensi_framework.utils.macros import INTEGER
 
 
 class IntegerField(NumericField):

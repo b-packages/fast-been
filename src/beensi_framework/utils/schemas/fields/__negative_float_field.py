@@ -1,8 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import NEGATIVE_FLOAT, MAX_VALUE
 
 from . import FloatField
-from beensi_framework.utils.macros import NEGATIVE_FLOAT
-from beensi_framework.utils.macros import MAX_VALUE
 
 
 class NegativeFloatField(FloatField):

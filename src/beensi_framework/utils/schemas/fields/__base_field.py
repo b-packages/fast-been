@@ -1,6 +1,7 @@
 from pydantic import BaseModel, root_validator
 from typing import Any
 from beensi_framework.utils.validators.regex import regex_checker
+
 from .__regex_validator import RegExValidator
 
 

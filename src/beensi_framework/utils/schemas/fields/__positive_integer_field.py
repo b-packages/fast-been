@@ -1,7 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import MIN_VALUE, POSITIVE_INTEGER
 
 from . import IntegerField
-from beensi_framework.utils.macros import MIN_VALUE, POSITIVE_INTEGER
 
 
 class PositiveIntegerField(IntegerField):

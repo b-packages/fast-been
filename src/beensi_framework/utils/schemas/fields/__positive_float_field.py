@@ -1,7 +1,7 @@
 from pydantic import root_validator
+from beensi_framework.utils.macros import POSITIVE_FLOAT, MIN_VALUE
 
 from . import FloatField
-from beensi_framework.utils.macros import POSITIVE_FLOAT, MIN_VALUE
 
 
 class PositiveFloatField(FloatField):
