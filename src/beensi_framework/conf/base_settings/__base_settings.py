@@ -1,16 +1,18 @@
 from functools import lru_cache
 from pydantic import BaseSettings as BSettings
 
-from ._jwt_cof_schema import _JWTConf
+from .__jwt import __JWT as JWTConf
+from .__pagination import __Pagination as PaginationConf
 
 
-class BaseSettings(BSettings):
+class __BaseSettings(BSettings):
     DEBUG: bool = True
     SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
     UTC_TIME = True
 
-    JWT_CONF: _JWTConf = _JWTConf()
+    JWT: JWTConf = JWTConf()
+    PAGINATION: PaginationConf = PaginationConf()
 
     class Config:
         env_file = '.env'
@@ -18,8 +20,8 @@ class BaseSettings(BSettings):
 
 
 @lru_cache()
-def get_settings():
-    return BaseSettings()
+def __get_settings():
+    return __BaseSettings()
 
 
-BASE_SETTINGS = get_settings()
+BASE_SETTINGS = __get_settings()

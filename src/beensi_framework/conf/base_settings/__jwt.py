@@ -1,7 +1,7 @@
 from pydantic import BaseModel as BModel
 
 
-class _JWTConf(BModel):
+class __JWT(BModel):
     SECRET_KEY: str = '********'
     ALGORITHM: str = 'HS256'
     # minute - access token life
