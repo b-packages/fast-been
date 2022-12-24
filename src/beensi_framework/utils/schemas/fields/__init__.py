@@ -7,3 +7,6 @@ from .__float_field import FloatField
 from .__positive_float_field import PositiveFloatField
 from .__negative_float_field import NegativeFloatField
 from .__string_field import StringField
+
+# ...
+from .__fields import Fields
