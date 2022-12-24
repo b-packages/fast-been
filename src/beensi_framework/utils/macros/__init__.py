@@ -9,6 +9,7 @@ VALIDATOR = 'validator'
 
 TYPE = 'type'
 
+BASE = 'base'
 MAX_VALUE = 'max_value'
 MIN_VALUE = 'min_value'
 NUMERIC = 'numeric'
