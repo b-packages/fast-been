@@ -14,6 +14,19 @@ class BaseField(BaseModel):
     allow_null: bool = True
     allow_blank: bool = True
     regex_validator: RegExValidator | None = None
+    read_only = False
+    write_only = False
+    queryset: Any = None
+    unique: bool = False
+
+    @root_validator
+    def check_unique(cls, values):
+        if values['value']:
+            if values['unique'] is True:
+                if values['queryset']:
+                    if values['queryset'].filter(**{values['name']: values['value']}).first() is None:
+                        raise Exception(f'\"{values["name"]}\" is exist.')
+        return values
 
     @root_validator
     def set_default(cls, values):
