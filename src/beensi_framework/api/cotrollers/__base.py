@@ -29,16 +29,31 @@ class __Base:
 
     field_control_options: dict = None
 
-    __valid_data: dict | None = None
+    __valid_data: list | dict | None = None
 
     @property
     def valid_data(self):
         return self.__valid_data
 
-    def validate_data(self, **data):
-        valid_data = {}
-        for k, v in data:
+    def validate_data(self, data: list | dict, many=False) -> list | dict:
+        if not many:
+            return self.__validate_data_many_false(data)
+        return self.__validate_data_many_true(data)
+
+    def __validate_data_many_false(self, data: dict) -> dict:
+        valid_data = dict()
+        for k, v in data.items():
             valid_data[k] = self.__field_class(k, v)
+        self.__valid_data = valid_data
+        return valid_data
+
+    def __validate_data_many_true(self, data: list) -> list:
+        valid_data = list()
+        for itm in data:
+            tmp = dict()
+            for k, v in itm.items():
+                tmp[k] = self.__field_class(k, v)
+            valid_data.append(tmp)
         self.__valid_data = valid_data
         return valid_data
 
