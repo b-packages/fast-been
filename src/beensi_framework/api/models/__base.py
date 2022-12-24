@@ -14,8 +14,11 @@ class Base(object):
     hashed = Column(TEXT())
     is_active = Column(Boolean())
 
-    def __set_pid(self):
-        self.pid = unique_id()
+    def __set_pid(self, value=None):
+        if value:
+            self.pid = value
+        else:
+            self.pid = unique_id()
 
     def __set_create_datetime(self):
         self.create_datetime = now()
@@ -26,7 +29,7 @@ class Base(object):
     def __set_is_active(self):
         self.is_active = True
 
-    def _to_dict(self):
+    def __to_dict(self) -> dict:
         tmp = dict()
         for column in self.__table__.columns:
             if column.name == 'hashed':
@@ -34,20 +37,20 @@ class Base(object):
             tmp[column.name] = str(getattr(self, column.name))
         return tmp
 
-    def to_dict(self):
-        tmp = self._to_dict().copy()
+    def to_dict(self) -> dict:
+        tmp = self.__to_dict().copy()
         tmp.pop('id')
         tmp.pop('create_datetime')
         tmp.pop('is_active')
         return tmp
 
-    def to_json(self):
+    def to_json(self) -> str:
         tmp = self.to_dict()
         tmp = json.dumps(tmp)
         return tmp
 
-    def hash(self):
-        tmp = self._to_dict()
+    def hash(self) -> str:
+        tmp = self.__to_dict()
         tmp = json.dumps(tmp)
         tmp = hash_row_db(tmp)
         return tmp
