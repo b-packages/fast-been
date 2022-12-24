@@ -1,84 +1,77 @@
 class Service:
-    model = None
-    db = None
-    _query = None
-
     def __init__(self, db, model):
-        self.db = db
-        self.model = model
+        self.__db = db
+        self.__model = model
 
-    def query(self):
-        if self._query:
-            return self._query
-        self._query = self.db.query(self.model).filter(is_active=True).all()
-        return self._query
+    __db = None
 
-    _data = None
+    @property
+    def db(self):
+        return self.__db
 
-    def data(self, input_data: dict) -> dict:
-        self._data = input_data
+    __model = None
 
-    def there_is(self, **kwargs) -> bool:
-        tmp = self.query().filter(**kwargs).all()
-        return bool(len(tmp))
+    @property
+    def model(self):
+        return self.__model
+
+    __queryset = None
+
+    @property
+    def queryset(self):
+        if self.__queryset is None:
+            self.__queryset = self.db.query(self.model).filter(is_active=True).all()
+        return self.__queryset
+
+    __instance = None
+
+    @property
+    def instance(self):
+        return self.__instance
 
     def get(self, **kwargs):
-        return self.query().filter(**kwargs).first()
+        self.__instance = self.queryset.filter(**kwargs).first()
+        return self.__instance
 
-    def __valid_data(self) -> dict | None:
-        if self._data is None:
-            return None
-        if not len(self._data):
-            return None
-        return self._data
-
-    def creator(self):
-        if not self.__valid_data():
-            return None
-        obj = self.model(**self._data)
-        obj.__set_pid()
-        obj.__set_create_datetime()
-        obj.__set_is_active()
-        obj.__set_hashed()
-        self.db.add(obj)
+    def list(self, page:int=1,page_size:int=1,filters:dict={},ordering:list=[]):
+        list
+        return self.queryset.filter(**filters).order_by(*ordering)
+    def creator(self, data: dict):
+        instance = self.model(**data)
+        instance.__set_pid(data['pid'] if 'pid' in data else None)
+        instance.__set_create_datetime()
+        instance.__set_is_active()
+        instance.__set_hashed()
+        self.db.add(instance)
         self.db.commit()
-        self.db.referesh(obj)
-        return obj
+        self.db.referesh(instance)
+        self.__instance = instance
+        return self.__instance
 
-    def updator(self, pid: str):
-        if not self.__valid_data():
-            return None
+    def updator(self, pid: str, data: dict):
         # Get data from database
-        obj = self.get(pid=pid)
-        if obj is None:
+        self.get(pid=pid)
+        if self.instance is None:
             return None
-        data = obj.to_dict()
-        # Disable data
-        obj.is_active = False
-        self.db.add(obj)
-        self.db.commit()
-        self.db.referesh(obj)
-
+        self.__instance_deactivate()
         # Update data
-        data.update(self._data)
-        new_obj = self.model(**data)
-        new_obj.pid = data['pid']
-        new_obj.__set_create_datetime()
-        new_obj.__set_is_active()
-        new_obj.__set_hashed()
-        self.db.add(new_obj)
-        self.db.commit()
-        self.db.referesh(new_obj)
-        return new_obj
+        _data = data.copy()
+        data = self.instance.to_dict().copy()
+        data.update(_data)
+        return self.creator(data)
 
     def destroyer(self, pid: str) -> None:
         # Get data from database
-        obj = self.get(pid=pid)
-        if obj is None:
+        self.get(pid=pid)
+        if self.instance is None:
             return None
         # Disable data
-        obj.is_active = False
-        self.db.add(obj)
+        return self.__instance_deactivate()
+
+    def __instance_deactivate(self):
+        self.instance.is_active = False
+        self.db.add(self.instance)
         self.db.commit()
-        self.db.referesh(obj)
-        return None
+        self.db.referesh(self.instance)
+        self.__instance = None
+        return self.instance
