@@ -1,3 +1,3 @@
-from ._error import error
-from ._info import info
-from ._warning import warning
+from .__error import error
+from .__info import info
+from .__warning import warning

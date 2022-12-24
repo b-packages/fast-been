@@ -1,2 +1,2 @@
 def sms(*args, **kwargs):
-    return
+    return args, kwargs

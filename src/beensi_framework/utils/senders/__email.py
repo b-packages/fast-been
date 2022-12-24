@@ -1,2 +1,2 @@
 def email(*args, **kwargs):
-    return
+    return args, kwargs

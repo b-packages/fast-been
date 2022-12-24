@@ -1,3 +1,3 @@
-from ._beanser_name import BEANSER_NAME
-from ._email_address import EMAIL_ADDRESS
-from ._password import PASSWORD
+from .__beanser_name import BEANSER_NAME
+from .__email_address import EMAIL_ADDRESS
+from .__password import PASSWORD
