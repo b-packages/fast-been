@@ -18,7 +18,7 @@ class NumericField(BaseField):
             if values['max_value']:
                 if values['max_value'] < values['value']:
                     raise Exception(
-                        f"The value of \"{values['value']}\" must be"
+                        f"The value of \"{values['name']}\" must be"
                         f" less than or equal to the value of \"{values['max_value']}\"."
                     )
         return values
@@ -29,7 +29,7 @@ class NumericField(BaseField):
             if values['min_value']:
                 if values['value'] < values['min_value']:
                     raise Exception(
-                        f"The value of \"{values['value']}\" must be"
+                        f"The value of \"{values['name']}\" must be"
                         f" greater than or equal to the value of \"{values['min_value']}\"."
                     )
         return values
