@@ -8,7 +8,7 @@ class Getter(__Base):
         if tmp is None:
             return None
         self.validate_data(**tmp.to_dict())
-        return self.output
+        return self.output()
 
     def __get(self, **kwargs):
         return self.queryset.filter(**kwargs).first()
