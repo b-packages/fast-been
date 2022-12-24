@@ -82,7 +82,6 @@ class __Base:
 
     output_field_list: list | None = None
 
-    @property
     def output(self, many=False) -> dict | list | None:
         if not self.valid_data:
             return None
@@ -111,7 +110,6 @@ class __Base:
             rst.append(tmp)
         return rst
 
-    @property
     def input(self, many=False) -> dict | list | None:
         if not self.valid_data:
             return None
