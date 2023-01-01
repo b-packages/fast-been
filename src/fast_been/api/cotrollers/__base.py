@@ -163,6 +163,10 @@ class __Base(ABC):
             raise MinimumLengthInputValueHTTPException(key, minimum_length)
         return value
 
+    def __converter(self, key, value):
+        converter = self.field_control_options[key]['converter']
+        return converter(value)
+
     @staticmethod
     def __is_blank(value):
         if value is None:
@@ -267,6 +271,7 @@ class __Base(ABC):
             'minimum_value': self.__minimum_value,
             'maximum_length': self.__maximum_length,
             'minimum_length': self.__minimum_length,
+            'converter': self.__converter,
         }
         return self.__controllers_
 
