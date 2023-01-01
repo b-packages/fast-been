@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 from fast_been.utils.exceptions.http import (
     RequiredInputValueHTTPException,
@@ -12,14 +13,16 @@ from fast_been.utils.exceptions.http import (
     MaximumLengthInputValueHTTPException,
     MinimumLengthInputValueHTTPException,
 )
+from fast_been.utils.macros import ALL
 
 
 class __Base(ABC):
-
     model = None
     db = None
-    lookup_field_name = 'pid'
-    field_control_options = None
+    lookup_field_name: str = 'pid'
+    field_control_options: Union[dict, None] = None
+    input_fields: Union[list, str, None] = None
+    output_fields: Union[list, str, None] = None
 
     @abstractmethod
     def run(self, *args, **kwargs):
@@ -34,6 +37,24 @@ class __Base(ABC):
         return self.__queryset_
 
     def __input(self, **kwargs):
+        if type(self.input_fields) == list:
+            return self.__input_for_input_fields(**kwargs)
+        if self.input_fields == ALL:
+            return self.__input_for_all_fields(**kwargs)
+        return {}
+
+    def __input_for_input_fields(self, **kwargs):
+        rslt = {}
+        for key, value in kwargs.items():
+            if key in self.input_fields:
+                if key in self.field_control_options:
+                    for i in self.field_control_options[key]:
+                        value = self.__field_control_options_mapper_input(controller_name=i, key=key, value=value)
+                if value:
+                    rslt[key] = value
+        return rslt
+
+    def __input_for_all_fields(self, **kwargs):
         rslt = {}
         for key, value in kwargs.items():
             if key in self.field_control_options:
@@ -44,6 +65,24 @@ class __Base(ABC):
         return rslt
 
     def __output(self, **kwargs):
+        if type(self.output_fields) == list:
+            return self.__output_for_output_fields(**kwargs)
+        if self.output_fields == ALL:
+            return self.__output_for_all_fields(**kwargs)
+        return {}
+
+    def __output_for_output_fields(self, **kwargs):
+        rslt = {}
+        for key, value in kwargs.items():
+            if key in self.output_fields:
+                if key in self.field_control_options:
+                    for i in self.field_control_options[key]:
+                        value = self.__field_control_options_mapper_output(controller_name=i, key=key, value=value)
+                if value:
+                    rslt[key] = value
+        return rslt
+
+    def __output_for_all_fields(self, **kwargs):
         rslt = {}
         for key, value in kwargs.items():
             if key in self.field_control_options:
