@@ -6,8 +6,8 @@ from fast_been.conf.base_settings import BASE_SETTINGS
 from fast_been.utils.date_time import now
 from fast_been.utils.generators.auth.jwt import access_token
 
-JWT_ALGORITHM = BASE_SETTINGS.JWT_CONF.ALGORITHM
-JWT_SECRET_KEY = BASE_SETTINGS.JWT_CONF.SECRET_KEY
+JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
+JWT_SECRET_KEY = BASE_SETTINGS.JWT.SECRET_KEY
 
 GET = 'get'
 POST = 'post'
