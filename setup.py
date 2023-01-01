@@ -16,6 +16,5 @@ setup(
         'SQLAlchemy',
         'python-jose',
         'passlib',
-        'requests',
     ],
 )
