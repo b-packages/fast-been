@@ -15,8 +15,6 @@ class Lister(__Base):
             filters=self.__filters(filters),
             ordering=self.__ordering(ordering)
         )
-        if not len(instances_):
-            return None
         if self.__pagination:
             return self.__list_pagination_true(
                 instances=instances_,
