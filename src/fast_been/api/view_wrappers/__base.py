@@ -31,7 +31,7 @@ class Base:
         try:
             if not self.__is_login_check(request):
                 return self.response
-            func = self.func_method(request.method)
+            func = self.func_method(request.method.lower())
             func(lookup_field=lookup_field, query_params=request.query_params, data=request.body())
             return self.response
         except HTTPException as exp:
