@@ -15,28 +15,15 @@ from fast_been.utils.exceptions.http import (
 
 
 class __Base(ABC):
-    def __init__(self, db, model):
-        self.__db = db
-        self.__model = model
 
+    model = None
+    db = None
     lookup_field_name = 'pid'
     field_control_options = None
 
     @abstractmethod
     def run(self, *args, **kwargs):
         pass
-
-    __db = None
-
-    @property
-    def db(self):
-        return self.__db
-
-    __model = None
-
-    @property
-    def model(self):
-        return self.__model
 
     __queryset_ = None
 
