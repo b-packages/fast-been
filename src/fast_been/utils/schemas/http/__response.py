@@ -19,4 +19,4 @@ class Response(BaseModel):
     headers: typing.Optional[typing.Mapping[str, str]] = None
     media_type: typing.Optional[str] = None
     background: typing.Any = None
-    set_cookies: typing.List[SetCookie]
+    set_cookies: typing.List[SetCookie] = []
