@@ -277,16 +277,16 @@ class Base(ABC):
         return self.__controllers_
 
     def __field_control_options_mapper_input(self, controller_name, key, value):
-        if controller_name == 'write_only':
+        if controller_name in ['write_only', ]:
             return value
         return self.__field_control_options_mapper(
             controller_name=controller_name, key=key, value=value)
 
     def __field_control_options_mapper_output(self, controller_name, key, value):
-        if controller_name == 'read_only':
-            return value
-        return self.__field_control_options_mapper(
-            controller_name=controller_name, key=key, value=value)
+        if controller_name in ['write_only', ]:
+            return self.__field_control_options_mapper(
+                controller_name=controller_name, key=key, value=value)
+        return value
 
     def __field_control_options_mapper(self, controller_name, key, value):
         if controller_name in self.__controllers:
