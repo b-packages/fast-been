@@ -50,7 +50,12 @@ class Base(ABC):
             if key in self.input_fields:
                 if key in self.field_control_options:
                     for i in self.field_control_options[key]:
+                        if i == 'converter':
+                            continue
                         value = self.__field_control_options_mapper_input(controller_name=i, key=key, value=value)
+                    if 'converter' in self.field_control_options[key]:
+                        value = self.__field_control_options_mapper_input(controller_name='converter', key=key,
+                                                                          value=value)
                 if value:
                     rslt[key] = value
         return rslt
