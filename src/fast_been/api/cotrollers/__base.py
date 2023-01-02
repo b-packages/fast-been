@@ -34,7 +34,7 @@ class Base(ABC):
     @property
     def __queryset(self):
         if self.__queryset_ is None:
-            self.__queryset_ = self.db.query(self.model).filter(is_active=True).all()
+            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True).all()
         return self.__queryset_
 
     def input_data(self, **kwargs):
