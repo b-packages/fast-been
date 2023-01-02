@@ -1,13 +1,13 @@
-from .__base import __Base
+from ._base import Base
 
 
-class Creator(__Base):
+class Creator(Base):
 
     def run(self, data: dict):
         return self.create(data)
 
     def create(self, data: dict):
-        input_ = self.__input(**data)
-        instance_ = self.__create(**input_)
-        output_ = self.__output(**instance_)
+        input_ = self.input_data(**data)
+        instance_ = self.create_data(**input_)
+        output_ = self.output_data(**instance_)
         return output_

@@ -2,16 +2,16 @@ import math
 
 from fast_been.conf.base_settings import BASE_SETTINGS
 
-from .__base import __Base
+from ._base import Base
 
 
-class Lister(__Base):
+class Lister(Base):
 
     def run(self, page: int = None, page_size: int = None, filters: dict = None, ordering: list = None):
         return self.list(page=page, page_size=page_size, filters=filters, ordering=ordering)
 
     def list(self, page: int = None, page_size: int = None, filters: dict = None, ordering: list = None):
-        instances_ = self.__list(
+        instances_ = self.list_data(
             filters=self.__filters(filters),
             ordering=self.__ordering(ordering)
         )
@@ -62,7 +62,7 @@ class Lister(__Base):
         count = instances.count()
         page_number = 1
         page_size = count
-        result = [self.__output(**i.to_dict()) for i in instances]
+        result = [self.output_data(**i.to_dict()) for i in instances]
         next_page = None
         previous_page = None
         rslt = {
@@ -80,7 +80,7 @@ class Lister(__Base):
         page_size = page_size
         count = instances.count()
         tmp = instances.paginate(page=page, per_page=page_size)
-        result = [self.__output(**i.to_dict()) for i in tmp]
+        result = [self.output_data(**i.to_dict()) for i in tmp]
         number_of_pages = math.ceil(count / page_size)
         next_page = self.__next_page(number_of_pages=number_of_pages,
                                      page_size=page_size, current_page_number=page)
