@@ -27,55 +27,63 @@ class Base:
         self.__methods = methods
         self.__is_login = is_login
 
-    def run(self, request: Request, lookup_field=None):
+    def run(self, request: Request, lookup_field=None, input_data=None):
         try:
             if not self.__is_login_check(request):
                 return self.response
             func = self.func_method(request.method.lower())
-            func(lookup_field=lookup_field, query_params=request.query_params, data=request.body())
+            func(__input_data=input_data, __lookup_field=lookup_field, **request.query_params)
             return self.response
         except HTTPException as exp:
             return exp
 
-    def get(self, **kwargs):
-        output = self.controller.run(**kwargs)
+    def get(self, __lookup_field=None, page: int = None, page_size: int = None, filters: dict = None,
+            ordering: list = None, **kwargs):
+        arguments = {
+            'lookup_field': __lookup_field,
+            'page': page,
+            'page_size': page_size,
+            'filters': filters,
+            'ordering': ordering
+        }
+        output = self.controller.run(**arguments)
         if output:
             self.response.status_code = 200
             self.response.body = self.response.render(output)
         else:
             self.response.status_code = 404
 
-    def post(self, **kwargs):
-        output = self.controller.run(data=kwargs['data'])
+    def post(self, __input_data: dict, **kwargs):
+        output = self.controller.run(data=__input_data)
         self.response.status_code = 201
         self.response.body = self.response.render(output)
 
-    def put(self, **kwargs):
+    def put(self, __lookup_field, __input_data, **kwargs):
         output = self.controller.run(
-            lookup_field=kwargs['lookup_field'], data=kwargs['data'])
+            lookup_field=__lookup_field, data=__input_data)
         if output:
             self.response.status_code = 200
             self.response.body = self.response.render(output)
         else:
             self.response.status_code = 404
 
-    def patch(self, **kwargs):
+    def patch(self, __lookup_field, __input_data, **kwargs):
         output = self.controller.run(
-            lookup_field=kwargs['lookup_field'], data=kwargs['data'])
+            lookup_field=__lookup_field, data=__input_data)
         if output:
             self.response.status_code = 200
             self.response.body = self.response.render(output)
         else:
             self.response.status_code = 404
 
-    def delete(self, **kwargs):
-        output = self.controller.run(lookup_field=kwargs['lookup_field'])
+    def delete(self, __lookup_field, **kwargs):
+        output = self.controller.run(lookup_field=__lookup_field)
         if output:
             self.response.status_code = 204
         else:
             self.response.status_code = 404
 
-    def __method_not_allowed(self, request: Request):
+    def __method_not_allowed(self, **kwargs):
         return self.response(status_code=405)
 
     def func_method(self, method):
