@@ -29,19 +29,18 @@ class Base(object):
     def __set_is_active(self):
         self.is_active = True
 
-    def __to_dict(self) -> dict:
+    def __all_to_dict(self):
         tmp = dict()
         for column in self.__table__.columns:
-            if column.name == 'hashed':
-                continue
-            tmp[column.name] = str(getattr(self, column.name))
+            tmp[column.name] = getattr(self, column.name)
         return tmp
 
     def to_dict(self) -> dict:
-        tmp = self.__to_dict().copy()
+        tmp = self.__all_to_dict().copy()
         tmp.pop('id')
         tmp.pop('create_datetime')
         tmp.pop('is_active')
+        tmp.pop('hashed')
         return tmp
 
     def to_json(self) -> str:
@@ -50,7 +49,10 @@ class Base(object):
         return tmp
 
     def hash(self) -> str:
-        tmp = self.__to_dict()
+        tmp = self.__all_to_dict()
+        tmp.pop('id')
+        tmp.pop('is_active')
+        tmp.pop('hashed')
         tmp = json.dumps(tmp)
         tmp = hash_row_db(tmp)
         return tmp
