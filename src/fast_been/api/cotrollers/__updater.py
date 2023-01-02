@@ -1,4 +1,4 @@
-from ._base import Base
+from .__base import Base
 
 
 class Updater(Base):

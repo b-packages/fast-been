@@ -2,7 +2,7 @@ import math
 
 from fast_been.conf.base_settings import BASE_SETTINGS
 
-from ._base import Base
+from .__base import Base
 
 
 class Lister(Base):

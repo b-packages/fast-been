@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union
+from sqlalchemy.orm import Session
 
 from fast_been.utils.exceptions.http import (
     RequiredInputValueHTTPException,
@@ -16,9 +17,9 @@ from fast_been.utils.exceptions.http import (
 from fast_been.utils.macros import ALL
 
 
-class __Base(ABC):
+class Base(ABC):
     model = None
-    db = None
+    db: Session = None
     lookup_field_name: str = 'pid'
     field_control_options: Union[dict, None] = None
     input_fields: Union[list, str, None] = None
@@ -36,7 +37,7 @@ class __Base(ABC):
             self.__queryset_ = self.db.query(self.model).filter(is_active=True).all()
         return self.__queryset_
 
-    def __input(self, **kwargs):
+    def input_data(self, **kwargs):
         if type(self.input_fields) == list:
             return self.__input_for_input_fields(**kwargs)
         if self.input_fields == ALL:
@@ -64,7 +65,7 @@ class __Base(ABC):
                 rslt[key] = value
         return rslt
 
-    def __output(self, **kwargs):
+    def output_data(self, **kwargs):
         if type(self.output_fields) == list:
             return self.__output_for_output_fields(**kwargs)
         if self.output_fields == ALL:
@@ -123,7 +124,7 @@ class __Base(ABC):
         return value
 
     def __unique(self, key, value):
-        if self.field_control_options[key]['unique'] and self.__retrieve(key=value):
+        if self.field_control_options[key]['unique'] and self.retrieve_data(key=value):
             raise UniqueInputValueHTTPException(key)
         return value
 
@@ -292,7 +293,7 @@ class __Base(ABC):
             return self.__controllers[controller_name](key=key, value=value)
         return value
 
-    def __create(self, **kwargs):
+    def create_data(self, **kwargs):
         inst = self.model(**kwargs)
         inst.__set_pid(kwargs['pid'] if 'pid' in kwargs else None)
         inst.__set_create_datetime()
@@ -303,11 +304,11 @@ class __Base(ABC):
         self.db.referesh(inst)
         return inst
 
-    def __retrieve(self, **kwargs):
+    def retrieve_data(self, **kwargs):
         return self.__queryset.filter(**kwargs).first()
 
-    def __destroy(self, **kwargs):
-        inst = self.__retrieve(**kwargs)
+    def destroy_data(self, **kwargs):
+        inst = self.retrieve_data(**kwargs)
         if not inst:
             return False
         inst.is_active = False
@@ -316,7 +317,7 @@ class __Base(ABC):
         self.db.referesh(inst)
         return True
 
-    def __list(self, **kwargs):
+    def list_data(self, **kwargs):
         rslt = self.__queryset
         if 'filters' in kwargs:
             rslt = rslt.filter(**kwargs['filters']).all()
