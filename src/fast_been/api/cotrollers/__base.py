@@ -301,7 +301,7 @@ class Base(ABC):
         inst.__set_hashed()
         self.db.add(inst)
         self.db.commit()
-        self.db.referesh(inst)
+        self.db.refresh(inst)
         return inst
 
     def retrieve_data(self, **kwargs):
@@ -314,7 +314,7 @@ class Base(ABC):
         inst.is_active = False
         self.db.add(inst)
         self.db.commit()
-        self.db.referesh(inst)
+        self.db.refresh(inst)
         return True
 
     def list_data(self, **kwargs):
