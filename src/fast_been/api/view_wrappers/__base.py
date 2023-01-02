@@ -1,6 +1,7 @@
 from datetime import datetime
 from jose import jwt
-from fastapi import Response, Request, HTTPException
+from fastapi import Request, HTTPException
+from fastapi.responses import JSONResponse
 
 from fast_been.conf.base_settings import BASE_SETTINGS
 from fast_been.utils.date_time import now
@@ -110,7 +111,7 @@ class Base:
 
     @property
     def http_response(self):
-        rslt = Response(
+        rslt = JSONResponse(
             status_code=self.__response.status_code,
             content=self.__response.content,
             headers=self.__response.headers,
