@@ -124,7 +124,7 @@ class Base(ABC):
         return value
 
     def __unique(self, key, value):
-        if self.field_control_options[key]['unique'] and self.retrieve_data(key=value):
+        if self.field_control_options[key]['unique'] and self.retrieve_data(**{key: value}):
             raise UniqueInputValueHTTPException(key)
         return value
 
