@@ -34,7 +34,7 @@ class Base(ABC):
     @property
     def __queryset(self):
         if self.__queryset_ is None:
-            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True).all()
+            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True)
         return self.__queryset_
 
     def input_data(self, **kwargs):
@@ -305,7 +305,7 @@ class Base(ABC):
         return inst
 
     def retrieve_data(self, **kwargs):
-        return self.__queryset.filter(**kwargs).first()
+        return self.__queryset.filter_by(**kwargs).first()
 
     def destroy_data(self, **kwargs):
         inst = self.retrieve_data(**kwargs)
@@ -320,7 +320,7 @@ class Base(ABC):
     def list_data(self, **kwargs):
         rslt = self.__queryset
         if 'filters' in kwargs:
-            rslt = rslt.filter(**kwargs['filters']).all()
+            rslt = rslt.filter_by(**kwargs['filters']).all()
         if 'ordering' in kwargs:
             rslt = rslt.order_by(*kwargs['ordering']).all()
         return rslt
