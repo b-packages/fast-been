@@ -1,4 +1,4 @@
-import json
+from fast_been.utils.json import JSON
 
 from sqlalchemy import Integer, Boolean, Column, String, DateTime, TEXT
 
@@ -45,7 +45,7 @@ class Base(object):
 
     def to_json(self) -> str:
         tmp = self.to_dict()
-        tmp = json.dumps(tmp)
+        tmp = JSON.dumps(tmp)
         return tmp
 
     def hash(self) -> str:
@@ -53,6 +53,6 @@ class Base(object):
         tmp.pop('id')
         tmp.pop('is_active')
         tmp.pop('hashed')
-        tmp = json.dumps(tmp)
+        tmp = JSON.dumps(tmp)
         tmp = hash_row_db(tmp)
         return tmp
