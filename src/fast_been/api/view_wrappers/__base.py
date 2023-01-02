@@ -120,7 +120,7 @@ class Base:
         )
         for c in self.__response.set_cookies:
             rslt.set_cookie(**c.dict())
-        return
+        return rslt
 
     @property
     def controller(self):
