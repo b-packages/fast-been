@@ -22,31 +22,29 @@ class Base(ABC):
     model = None
     db: Session = None
     lookup_field_name: str = PID
-    input_fields: Union[list, str, None] = None
-    output_fields: Union[list, str, None] = None
+    input_fields: list = list()
+    field_control_options: dict = dict()
+    output_fields: list = list()
 
     @abstractmethod
     def run(self, *args, **kwargs):
         pass
 
-    __field_control_options: Union[dict, None] = None
-
-    @property
-    def field_control_options(self):
-        if self.__field_control_options:
-            return self.__field_control_options
-        return {}
-
     @staticmethod
     def __field_control_options_sort_key_func(item):
         return FIELD_CONTROL_OPTIONS_METER[item[0]]
 
-    @field_control_options.setter
-    def field_control_options(self, value: dict):
+    __get_field_control_options: Union[dict, None] = None
+
+    @property
+    def get_field_control_options(self):
+        if self.__get_field_control_options:
+            return self.__get_field_control_options
         tmp = {}
-        for k, v in value.items():
+        for k, v in self.field_control_options.items():
             tmp[k] = dict(sorted(v.items(), key=self.__field_control_options_sort_key_func))
-        self.__field_control_options = tmp
+        self.__get_field_control_options = tmp
+        return self.__get_field_control_options
 
     __queryset_ = None
 
@@ -60,8 +58,8 @@ class Base(ABC):
         rslt = {}
         for key, value in kwargs.items():
             if key in self.input_fields:
-                if key in self.field_control_options:
-                    for i in self.field_control_options[key]:
+                if key in self.get_field_control_options:
+                    for i in self.get_field_control_options[key]:
                         value = self.__field_control_options_mapper(controller_name=i, key=key, value=value)
                 if value:
                     rslt[key] = value
@@ -76,37 +74,37 @@ class Base(ABC):
 
     def __default(self, key, value):
         if not value:
-            return self.field_control_options[key][DEFAULT]
+            return self.get_field_control_options[key][DEFAULT]
         return value
 
     def __required(self, key, value):
-        if self.field_control_options[key][REQUIRED] and value is None:
+        if self.get_field_control_options[key][REQUIRED] and value is None:
             raise RequiredInputValueHTTPException(key)
         return value
 
     def __allow_null(self, key, value):
-        if not self.field_control_options[key][ALLOW_NULL] and value is None:
+        if not self.get_field_control_options[key][ALLOW_NULL] and value is None:
             raise AllowNullInputValueHTTPException(key)
         return value
 
     def __allow_blank(self, key, value):
-        if not self.field_control_options[key][ALLOW_BLANK] and self.__is_blank(value):
+        if not self.get_field_control_options[key][ALLOW_BLANK] and self.__is_blank(value):
             raise AllowBlankInputValueHTTPException(key)
         return value
 
     def __unique(self, key, value):
-        if self.field_control_options[key][UNIQUE] and self.retrieve_data(**{key: value}):
+        if self.get_field_control_options[key][UNIQUE] and self.retrieve_data(**{key: value}):
             raise UniqueInputValueHTTPException(key)
         return value
 
     def __regex_validator(self, key, value):
-        regex_validator = self.field_control_options[key][REGEX_VALIDATOR]
+        regex_validator = self.get_field_control_options[key][REGEX_VALIDATOR]
         if not regex_validator.validate(value):
             raise RegexValidatorInputValueHTTPException(key, regex_validator.info)
         return value
 
     def __type(self, key, value):
-        type_input_value = self.field_control_options[key][TYPE]
+        type_input_value = self.get_field_control_options[key][TYPE]
         if type(type_input_value) == str:
             if not self.__types__controller[type_input_value](value):
                 raise TypeInputValueHTTPException(key, type_input_value)
@@ -118,31 +116,31 @@ class Base(ABC):
         raise TypeInputValueHTTPException(key, str(type_input_value))
 
     def __maximum_value(self, key, value):
-        maximum_value = self.field_control_options[key][MAXIMUM_VALUE]
+        maximum_value = self.get_field_control_options[key][MAXIMUM_VALUE]
         if not (type(value) in [int, float] and value <= maximum_value):
             raise MaximumValueInputValueHTTPException(key, maximum_value)
         return value
 
     def __minimum_value(self, key, value):
-        minimum_value = self.field_control_options[key][MINIMUM_VALUE]
+        minimum_value = self.get_field_control_options[key][MINIMUM_VALUE]
         if not (type(value) in [int, float] and minimum_value <= value):
             raise MinimumValueInputValueHTTPException(key, minimum_value)
         return value
 
     def __maximum_length(self, key, value):
-        maximum_length = self.field_control_options[key][MAXIMUM_LENGTH]
+        maximum_length = self.get_field_control_options[key][MAXIMUM_LENGTH]
         if not (type(value) in [str, list, dict, tuple, set] and len(value) <= maximum_length):
             raise MaximumLengthInputValueHTTPException(key, maximum_length)
         return value
 
     def __minimum_length(self, key, value):
-        minimum_length = self.field_control_options[key][MINIMUM_LENGTH]
+        minimum_length = self.get_field_control_options[key][MINIMUM_LENGTH]
         if not (type(value) in [str, list, dict, tuple, set] and minimum_length <= len(value)):
             raise MinimumLengthInputValueHTTPException(key, minimum_length)
         return value
 
     def __converter(self, key, value):
-        converter = self.field_control_options[key][CONVERTER]
+        converter = self.get_field_control_options[key][CONVERTER]
         return converter(value)
 
     @staticmethod
