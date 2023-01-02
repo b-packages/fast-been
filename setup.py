@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='fast_been',
-    version='0.003',
+    version='1.00',
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    url='https://github.com/b-packages/beensi-framework.git',
-    keywords='fast_been',
+    url='https://github.com/b-packages/fast-been.git',
+    keywords='fast_been fastapi',
     install_requires=[
         'fastapi',
         'pydantic',
