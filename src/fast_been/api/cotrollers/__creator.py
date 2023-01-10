@@ -14,3 +14,6 @@ class Creator(Base):
         instance_ = self.create_data(**input_)
         output_ = self.output_data(**instance_.to_dict())
         return output_
+
+    def controller_type(self):
+        return 'CREATOR'

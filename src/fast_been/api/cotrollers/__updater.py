@@ -20,3 +20,6 @@ class Updater(Base):
         instance_ = self.create_data(**data_)
         output_ = self.output_data(**instance_.to_dict())
         return output_
+
+    def controller_type(self):
+        return 'UPDATER'

@@ -10,3 +10,6 @@ class Destroyer(Base):
 
     def destroy(self, lookup_field):
         return self.destroy_data(**{self.lookup_field_name: lookup_field})
+
+    def controller_type(self):
+        return 'DESTROYER'

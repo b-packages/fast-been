@@ -27,6 +27,10 @@ class Base(ABC):
     output_fields: list = list()
 
     @abstractmethod
+    def controller_type(self):
+        pass
+
+    @abstractmethod
     def run(self, *args, **kwargs):
         pass
 

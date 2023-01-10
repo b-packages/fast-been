@@ -13,3 +13,6 @@ class Retriever(Base):
         instance_ = self.retrieve_data(**{self.lookup_field_name: lookup_field})
         outputs_ = self.output_data(**instance_.to_dict())
         return outputs_
+
+    def controller_type(self):
+        return 'RETRIEVER'

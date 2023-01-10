@@ -27,6 +27,9 @@ class Lister(Base):
             )
         return self.__list_pagination_false(instances=instances_)
 
+    def controller_type(self):
+        return 'LISTER'
+
     filter_set = []
     order_set = []
 
