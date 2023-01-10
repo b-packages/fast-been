@@ -2,7 +2,10 @@ from .__base import Base
 
 
 class Destroyer(Base):
-    def run(self, lookup_field):
+    def run(self, **kwargs):
+        lookup_field = kwargs.get('lookup_field')
+        if lookup_field is None:
+            return None
         return self.destroy(lookup_field)
 
     def destroy(self, lookup_field):

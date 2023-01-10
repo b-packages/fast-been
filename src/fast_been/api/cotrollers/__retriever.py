@@ -3,7 +3,10 @@ from .__base import Base
 
 class Retriever(Base):
 
-    def run(self, lookup_field):
+    def run(self, **kwargs):
+        lookup_field = kwargs.get('lookup_field')
+        if lookup_field is None:
+            return None
         return self.retrieve(lookup_field)
 
     def retrieve(self, lookup_field):

@@ -7,7 +7,11 @@ from .__base import Base
 
 class Lister(Base):
 
-    def run(self, page: int = None, page_size: int = None, filters: dict = None, ordering: list = None):
+    def run(self, **kwargs):
+        page = kwargs.get('page')
+        page_size = kwargs.get('page_size')
+        filters = kwargs.get('filters')
+        ordering = kwargs.get('ordering')
         return self.list(page=page, page_size=page_size, filters=filters, ordering=ordering)
 
     def list(self, page: int = None, page_size: int = None, filters: dict = None, ordering: list = None):
