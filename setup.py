@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+from fast_been import __version__
 
 setup(
     name='fast_been',
-    version='1.00',
+    version=__version__,
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
