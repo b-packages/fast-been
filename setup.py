@@ -1,16 +1,24 @@
 from setuptools import setup, find_packages
-from fast_been import __version__
+from fast_been import (
+    __name__,
+    __version__,
+    __license__,
+    __author__,
+    __author_email__,
+    __url__,
+    __keywords__,
+)
 
 setup(
-    name='fast_been',
+    name=__name__,
     version=__version__,
-    license='BEENSI',
-    author='nvd',
-    author_email='navidsoleymani@ymail.com',
+    license=__license__,
+    author=__author__,
+    author_email=__author_email__,
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    url='https://github.com/b-packages/fast-been.git',
-    keywords='fast_been fastapi',
+    url=__url__,
+    keywords=__keywords__,
     install_requires=[
         'fastapi',
         'pydantic',
