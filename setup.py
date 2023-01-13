@@ -19,11 +19,11 @@ setup(
     package_dir={'': 'src'},
     url=__url__,
     keywords=__keywords__,
-    install_requires=[
-        'fastapi',
-        'pydantic',
-        'SQLAlchemy',
-        'python-jose',
-        'passlib',
-    ],
+    # install_requires=[
+    #     'fastapi',
+    #     'pydantic',
+    #     'SQLAlchemy',
+    #     'python-jose',
+    #     'passlib',
+    # ],
 )
