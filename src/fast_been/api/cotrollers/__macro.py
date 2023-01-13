@@ -12,6 +12,7 @@ TUPLE = 'tuple'
 SET = 'set'
 BOOLEAN = 'boolean'
 PID = 'pid'
+
 DEFAULT = 'default'
 REQUIRED = 'required'
 ALLOW_NULL = 'allow_null'
@@ -42,3 +43,5 @@ FIELD_CONTROL_OPTIONS_METER = {
     REGEX_VALIDATOR: 11,
     CONVERTER: 12
 }
+
+

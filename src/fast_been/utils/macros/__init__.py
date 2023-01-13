@@ -1,3 +1,5 @@
+from .__controller_type import ControllerType
+
 DEFAULT = 'default'
 REQUIRED = 'required'
 UNIQUE = 'unique'

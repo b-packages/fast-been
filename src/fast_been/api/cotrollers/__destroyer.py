@@ -1,4 +1,5 @@
 from .__base import Base
+from fast_been.utils.macros import ControllerType
 
 
 class Destroyer(Base):
@@ -11,5 +12,6 @@ class Destroyer(Base):
     def destroy(self, lookup_field):
         return self.destroy_data(**{self.lookup_field_name: lookup_field})
 
+    @property
     def controller_type(self):
-        return 'DESTROYER'
+        return ControllerType.destroyer()

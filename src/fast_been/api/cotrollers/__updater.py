@@ -1,4 +1,5 @@
 from .__base import Base
+from fast_been.utils.macros import ControllerType
 
 
 class Updater(Base):
@@ -21,5 +22,6 @@ class Updater(Base):
         output_ = self.output_data(**instance_.to_dict())
         return output_
 
+    @property
     def controller_type(self):
-        return 'UPDATER'
+        return ControllerType.updater()

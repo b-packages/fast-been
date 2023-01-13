@@ -3,6 +3,7 @@ import math
 from fast_been.conf.base_settings import BASE_SETTINGS
 
 from .__base import Base
+from fast_been.utils.macros import ControllerType
 
 
 class Lister(Base):
@@ -27,8 +28,9 @@ class Lister(Base):
             )
         return self.__list_pagination_false(instances=instances_)
 
+    @property
     def controller_type(self):
-        return 'LISTER'
+        return ControllerType.lister()
 
     filter_set = []
     order_set = []

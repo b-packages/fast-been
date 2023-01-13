@@ -1,4 +1,5 @@
 from .__base import Base
+from fast_been.utils.macros import ControllerType
 
 
 class Retriever(Base):
@@ -14,5 +15,6 @@ class Retriever(Base):
         outputs_ = self.output_data(**instance_.to_dict())
         return outputs_
 
+    @property
     def controller_type(self):
-        return 'RETRIEVER'
+        return ControllerType.retriever()
