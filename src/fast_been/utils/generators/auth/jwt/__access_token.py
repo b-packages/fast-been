@@ -10,9 +10,9 @@ def access_token(pid: str):
         claims={
             'sub': pid,
             'exp': now() + timedelta(
-                minutes=BASE_SETTINGS.JWT_CONF.EXPIRATION_DATE
+                minutes=BASE_SETTINGS.JWT.EXPIRATION_DATE
             )
         },
-        key=BASE_SETTINGS.JWT_CONF.SECRET_KEY,
-        algorithm=BASE_SETTINGS.JWT_CONF.ALGORITHM,
+        key=BASE_SETTINGS.JWT.SECRET_KEY,
+        algorithm=BASE_SETTINGS.JWT.ALGORITHM,
     )
