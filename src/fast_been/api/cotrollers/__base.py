@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Optional
 from sqlalchemy.orm import Session
 
 from fast_been.utils.exceptions.http import (
@@ -13,6 +13,7 @@ from fast_been.utils.exceptions.http import (
     MinimumValueInputValueHTTPException,
     MaximumLengthInputValueHTTPException,
     MinimumLengthInputValueHTTPException,
+    LeastOneRequiredHTTPException,
 )
 
 from .__macro import *
@@ -25,48 +26,26 @@ class Base(ABC):
     input_fields: list = list()
     field_control_options: dict = dict()
     output_fields: list = list()
-
-    @abstractmethod
-    def controller_type(self):
-        pass
+    least_one_required: Optional[list] = None
 
     @abstractmethod
     def run(self, *args, **kwargs):
         pass
 
-    @staticmethod
-    def __field_control_options_sort_key_func(item):
-        return FIELD_CONTROL_OPTIONS_METER[item[0]]
-
-    __get_field_control_options: Union[dict, None] = None
-
-    @property
-    def get_field_control_options(self):
-        if self.__get_field_control_options:
-            return self.__get_field_control_options
-        tmp = {}
-        for k, v in self.field_control_options.items():
-            tmp[k] = dict(sorted(v.items(), key=self.__field_control_options_sort_key_func))
-        self.__get_field_control_options = tmp
-        return self.__get_field_control_options
-
-    __queryset_ = None
-
-    @property
-    def __queryset(self):
-        if self.__queryset_ is None:
-            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True)
-        return self.__queryset_
+    @abstractmethod
+    def controller_type(self):
+        pass
 
     def input_data(self, **kwargs):
         rslt = {}
         for key, value in kwargs.items():
             if key in self.input_fields:
-                if key in self.get_field_control_options:
-                    for i in self.get_field_control_options[key]:
+                if key in self.__get_field_control_options:
+                    for i in self.__get_field_control_options[key]:
                         value = self.__field_control_options_mapper(controller_name=i, key=key, value=value)
                 if value:
                     rslt[key] = value
+        rslt = self.__least_one_required(rslt)
         return rslt
 
     def output_data(self, **kwargs):
@@ -76,39 +55,96 @@ class Base(ABC):
                 rslt[key] = value
         return rslt
 
+    def create_data(self, **kwargs):
+        inst = self.model(**kwargs)
+        inst.__set_pid(kwargs[PID] if PID in kwargs else None)
+        inst.__set_create_datetime()
+        inst.__set_is_active()
+        inst.__set_hashed()
+        self.db.add(inst)
+        self.db.commit()
+        self.db.refresh(inst)
+        return inst
+
+    def retrieve_data(self, **kwargs):
+        return self.__queryset.filter_by(**kwargs).first()
+
+    def destroy_data(self, **kwargs):
+        inst = self.retrieve_data(**kwargs)
+        if not inst:
+            return False
+        inst.is_active = False
+        self.db.add(inst)
+        self.db.commit()
+        self.db.refresh(inst)
+        return True
+
+    def list_data(self, **kwargs):
+        rslt = self.__queryset
+        if FILTERS in kwargs:
+            rslt = rslt.filter_by(**kwargs[FILTERS]).all()
+        if ORDERING in kwargs:
+            rslt = rslt.order_by(*kwargs[ORDERING]).all()
+        return rslt
+
+    __field_control_options_: Union[dict, None] = None
+    __queryset_ = None
+    __types__controller_ = None
+    __controllers_ = None
+
+    @staticmethod
+    def __field_control_options_sort_key_func(item):
+        return FIELD_CONTROL_OPTIONS_METER[item[0]]
+
+    @property
+    def __get_field_control_options(self):
+        if self.__field_control_options_:
+            return self.__field_control_options_
+        tmp = {}
+        for k, v in self.field_control_options.items():
+            tmp[k] = dict(sorted(v.items(), key=self.__field_control_options_sort_key_func))
+        self.__field_control_options_ = tmp
+        return self.__field_control_options_
+
+    @property
+    def __queryset(self):
+        if self.__queryset_ is None:
+            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True)
+        return self.__queryset_
+
     def __default(self, key, value):
         if not value:
-            return self.get_field_control_options[key][DEFAULT]
+            return self.__get_field_control_options[key][DEFAULT]
         return value
 
     def __required(self, key, value):
-        if self.get_field_control_options[key][REQUIRED] and value is None:
+        if self.__get_field_control_options[key][REQUIRED] and value is None:
             raise RequiredInputValueHTTPException(key)
         return value
 
     def __allow_null(self, key, value):
-        if not self.get_field_control_options[key][ALLOW_NULL] and value is None:
+        if not self.__get_field_control_options[key][ALLOW_NULL] and value is None:
             raise AllowNullInputValueHTTPException(key)
         return value
 
     def __allow_blank(self, key, value):
-        if not self.get_field_control_options[key][ALLOW_BLANK] and self.__is_blank(value):
+        if not self.__get_field_control_options[key][ALLOW_BLANK] and self.__is_blank(value):
             raise AllowBlankInputValueHTTPException(key)
         return value
 
     def __unique(self, key, value):
-        if self.get_field_control_options[key][UNIQUE] and self.retrieve_data(**{key: value}):
+        if self.__get_field_control_options[key][UNIQUE] and self.retrieve_data(**{key: value}):
             raise UniqueInputValueHTTPException(key)
         return value
 
     def __regex_validator(self, key, value):
-        regex_validator = self.get_field_control_options[key][REGEX_VALIDATOR]
+        regex_validator = self.__get_field_control_options[key][REGEX_VALIDATOR]
         if not regex_validator.validate(value):
             raise RegexValidatorInputValueHTTPException(key, regex_validator.info)
         return value
 
     def __type(self, key, value):
-        type_input_value = self.get_field_control_options[key][TYPE]
+        type_input_value = self.__get_field_control_options[key][TYPE]
         if type(type_input_value) == str:
             if not self.__types__controller[type_input_value](value):
                 raise TypeInputValueHTTPException(key, type_input_value)
@@ -120,32 +156,40 @@ class Base(ABC):
         raise TypeInputValueHTTPException(key, str(type_input_value))
 
     def __maximum_value(self, key, value):
-        maximum_value = self.get_field_control_options[key][MAXIMUM_VALUE]
+        maximum_value = self.__get_field_control_options[key][MAXIMUM_VALUE]
         if not (type(value) in [int, float] and value <= maximum_value):
             raise MaximumValueInputValueHTTPException(key, maximum_value)
         return value
 
     def __minimum_value(self, key, value):
-        minimum_value = self.get_field_control_options[key][MINIMUM_VALUE]
+        minimum_value = self.__get_field_control_options[key][MINIMUM_VALUE]
         if not (type(value) in [int, float] and minimum_value <= value):
             raise MinimumValueInputValueHTTPException(key, minimum_value)
         return value
 
     def __maximum_length(self, key, value):
-        maximum_length = self.get_field_control_options[key][MAXIMUM_LENGTH]
+        maximum_length = self.__get_field_control_options[key][MAXIMUM_LENGTH]
         if not (type(value) in [str, list, dict, tuple, set] and len(value) <= maximum_length):
             raise MaximumLengthInputValueHTTPException(key, maximum_length)
         return value
 
     def __minimum_length(self, key, value):
-        minimum_length = self.get_field_control_options[key][MINIMUM_LENGTH]
+        minimum_length = self.__get_field_control_options[key][MINIMUM_LENGTH]
         if not (type(value) in [str, list, dict, tuple, set] and minimum_length <= len(value)):
             raise MinimumLengthInputValueHTTPException(key, minimum_length)
         return value
 
     def __converter(self, key, value):
-        converter = self.get_field_control_options[key][CONVERTER]
+        converter = self.__get_field_control_options[key][CONVERTER]
         return converter(value)
+
+    def __least_one_required(self, input_data: dict):
+        if self.least_one_required is None:
+            return input_data
+        for k, v in input_data.items():
+            if k in self.least_one_required:
+                return input_data
+        raise LeastOneRequiredHTTPException(self.least_one_required)
 
     @staticmethod
     def __is_blank(value):
@@ -155,8 +199,6 @@ class Base(ABC):
             return not bool(len(value))
         except:
             return False
-
-    __types__controller_ = None
 
     @property
     def __types__controller(self):
@@ -231,8 +273,6 @@ class Base(ABC):
     def __is_boolean(value):
         return type(value) is bool
 
-    __controllers_ = None
-
     @property
     def __controllers(self):
         if self.__controllers_:
@@ -256,35 +296,3 @@ class Base(ABC):
     def __field_control_options_mapper(self, controller_name, key, value):
         return self.__controllers[controller_name](
             key=key, value=value) if controller_name in self.__controllers else value
-
-    def create_data(self, **kwargs):
-        inst = self.model(**kwargs)
-        inst.__set_pid(kwargs[PID] if PID in kwargs else None)
-        inst.__set_create_datetime()
-        inst.__set_is_active()
-        inst.__set_hashed()
-        self.db.add(inst)
-        self.db.commit()
-        self.db.refresh(inst)
-        return inst
-
-    def retrieve_data(self, **kwargs):
-        return self.__queryset.filter_by(**kwargs).first()
-
-    def destroy_data(self, **kwargs):
-        inst = self.retrieve_data(**kwargs)
-        if not inst:
-            return False
-        inst.is_active = False
-        self.db.add(inst)
-        self.db.commit()
-        self.db.refresh(inst)
-        return True
-
-    def list_data(self, **kwargs):
-        rslt = self.__queryset
-        if FILTERS in kwargs:
-            rslt = rslt.filter_by(**kwargs[FILTERS]).all()
-        if ORDERING in kwargs:
-            rslt = rslt.order_by(*kwargs[ORDERING]).all()
-        return rslt
