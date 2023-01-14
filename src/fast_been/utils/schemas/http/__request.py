@@ -1,18 +1,18 @@
 from fastapi import Request as FastAPIRequest
 from pydantic import BaseModel
-from typing import Any
+from typing import Optional
 
 
 class Request(BaseModel):
-    base_request: FastAPIRequest = None
-    input_data: Any = None
-    lookup_field: Any = None
-    page: Any = None
-    page_size: Any = None
-    filters: Any = None
-    ordering: Any = None
-    search: Any = None
-    beanser_pid: Any = None
+    base_request: Optional[FastAPIRequest] = None
+    input_data: Optional[dict] = None
+    lookup_field: Optional[int, str] = None
+    page: Optional[int] = None
+    page_size: Optional[int] = None
+    filters: Optional[list] = None
+    ordering: Optional[list] = None
+    search: Optional[list] = None
+    beanser_pid: Optional[str] = None
 
     def decoder(self, **kwargs):
         _okwargs = dict()
