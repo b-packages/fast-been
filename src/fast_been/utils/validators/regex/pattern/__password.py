@@ -4,9 +4,7 @@ from . import Base
 class Password(Base):
     @property
     def pattern(self):
-        return """
-        ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,31}$
-        """
+        return "^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,31}$"
 
     @property
     def info(self):
