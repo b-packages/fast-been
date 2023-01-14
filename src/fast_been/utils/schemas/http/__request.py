@@ -1,12 +1,11 @@
-from fastapi import Request as FastAPIRequest
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 
 
 class Request(BaseModel):
-    base_request: Optional[FastAPIRequest] = None
+    base_request: Any = None
     input_data: Optional[dict] = None
-    lookup_field: Optional[int, str] = None
+    lookup_field: Any = None
     page: Optional[int] = None
     page_size: Optional[int] = None
     filters: Optional[list] = None
