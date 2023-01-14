@@ -1,5 +1,6 @@
-from .__base import Base
 from fast_been.utils.macros import ControllerType
+
+from . import Base
 
 
 class Creator(Base):

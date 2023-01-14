@@ -1,9 +1,9 @@
 import math
 
 from fast_been.conf.base_settings import BASE_SETTINGS
-
-from .__base import Base
 from fast_been.utils.macros import ControllerType
+
+from . import Base
 
 
 class Lister(Base):
