@@ -4,7 +4,7 @@ from jose import jwt
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
 
-from fast_been.utils.http.response.status.code import OK, BAD_REQUEST, CREATED, NO_CONTENT
+from fast_been.utils.http.response.status.code import OK, BAD_REQUEST, CREATED, NO_CONTENT, UNAUTHORIZED
 from fast_been.conf.base_settings import BASE_SETTINGS
 from fast_been.utils.generators.auth.jwt import access_token
 from fast_been.utils.macros import ControllerType
@@ -20,10 +20,15 @@ JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
 
 
 class Base:
+    controller_class = None
+    expected_status_code = None
+    need_authentication = False
+
     def run(self, **kwargs):
         try:
             self.__request_setter(**kwargs)
-            self.__does_it_have_access()
+            if not self.__does_it_have_access():
+                return self.__response
             rslt = self.__get_controller.run(**self.__request.dict())
             self.__set_response_status_code(self.expected_status_code if rslt else BAD_REQUEST)
             self.__set_response_content(rslt)
@@ -31,9 +36,22 @@ class Base:
         except HTTPException as exp:
             return exp
 
-    controller_class = None
+    def set_access_token(self, pid):
+        self.__set_cookie(
+            {
+                'key': 'Authorization',
+                'value': access_token(pid=pid),
+                'secure': False,
+                'httponly': True,
+            }
+        )
+
+    def delete_access_token(self):
+        self.__delete_cookie('Authorization')
 
     __controller_instance = None
+    __request: FastBeenRequest = FastBeenRequest()
+    __response_: FastBeenResponse = FastBeenResponse()
 
     @property
     def __get_controller(self):
@@ -42,13 +60,9 @@ class Base:
         self.__controller_instance = self.controller_class()
         return self.__controller_instance
 
-    expected_status_code = None
-
     @property
     def __expected_status_code(self):
         return self.expected_status_code or self.__get_controller.controller_type or OK
-
-    __request: FastBeenRequest = FastBeenRequest()
 
     def __request_setter(self, **kwargs):
         self.__request.decoder(**kwargs)
@@ -65,8 +79,6 @@ class Base:
         if value in mapper:
             return mapper[value]
         return None
-
-    __response_: FastBeenResponse = FastBeenResponse()
 
     @property
     def __response(self):
@@ -96,16 +108,12 @@ class Base:
     def __set_response_background(self, value):
         self.__response_.background = value
 
-    def __set_response_cookie(self, value: dict):
-        self.__response_.cookies.append(FastBeenCookie(**value))
-
-    need_authentication = False
-
     def __does_it_have_access(self):
         request: Request = self.__request.base_request
         if not self.need_authentication:
             return True
         if 'Authorization' not in request.cookies:
+            self.__response_.status_code = UNAUTHORIZED
             return False
         token_decoded = jwt.decode(
             request.cookies['Authorization'],
@@ -113,16 +121,20 @@ class Base:
             algorithms=JWT_ALGORITHM,
         )
         if token_decoded is None:
+            self.__response_.status_code = UNAUTHORIZED
             return False
         if datetime.utcfromtimestamp(token_decoded['exp']) < now():
+            self.__response_.status_code = UNAUTHORIZED
             return False
         self.__request.beanser_pid = token_decoded['sub']
-        self.__set_response_cookie(
-            {
-                'key': 'Authorization',
-                'value': access_token(pid=token_decoded['sub']),
-                'secure': False,
-                'httponly': True,
-            }
-        )
+        self.set_access_token(token_decoded['sub'])
         return True
+
+    def __set_cookie(self, value: dict):
+        self.__response_.cookies.append(FastBeenCookie(**value))
+
+    def __delete_cookie(self, key):
+        for i, c in enumerate(self.__response_.cookies):
+            if c.key == key:
+                self.__response_.cookies.pop(i)
+                return
