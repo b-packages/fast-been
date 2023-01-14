@@ -37,14 +37,16 @@ class Base(ABC):
         pass
 
     def input_data(self, **kwargs):
+        input_data = {}
+        for i in self.input_fields:
+            input_data[i] = kwargs[i] if i in kwargs else None
         rslt = {}
-        for key, value in kwargs.items():
-            if key in self.input_fields:
-                if key in self.__get_field_control_options:
-                    for i in self.__get_field_control_options[key]:
-                        value = self.__field_control_options_mapper(controller_name=i, key=key, value=value)
-                if value:
-                    rslt[key] = value
+        for key, value in input_data.items():
+            if key in self.__get_field_control_options:
+                for i in self.__get_field_control_options[key]:
+                    value = self.__field_control_options_mapper(controller_name=i, key=key, value=value)
+            if value:
+                rslt[key] = value
         rslt = self.__least_one_required(rslt)
         return rslt
 
