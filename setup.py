@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fast_been',
-    version='1.00',
+    version='1.01',
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
