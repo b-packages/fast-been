@@ -37,7 +37,6 @@ class Base:
         except HTTPException as exp:
             return exp
 
-    @property
     def get_response(self):
         rslt = JSONResponse(
             status_code=self.response.status_code,
