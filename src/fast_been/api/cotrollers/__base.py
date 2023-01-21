@@ -84,9 +84,11 @@ class Base(ABC):
     def list_data(self, **kwargs):
         rslt = self.__queryset
         if FILTERS in kwargs:
-            rslt = rslt.filter_by(**kwargs[FILTERS]).all()
+            if kwargs[FILTERS]:
+                rslt = rslt.filter_by(**kwargs[FILTERS]).all()
         if ORDERING in kwargs:
-            rslt = rslt.order_by(*kwargs[ORDERING]).all()
+            if kwargs[ORDERING]:
+                rslt = rslt.order_by(*kwargs[ORDERING]).all()
         return rslt
 
     __field_control_options_: Union[dict, None] = None
