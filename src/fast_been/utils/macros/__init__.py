@@ -1,4 +1,5 @@
 from .__controller_type import ControllerType
+from .__log import LogType
 
 DEFAULT = 'default'
 REQUIRED = 'required'
