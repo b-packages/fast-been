@@ -30,7 +30,7 @@ class Base:
             self.__request_setter(**kwargs)
             if not self.__does_it_have_access():
                 return self.get_response()
-            rslt = self.__get_controller.run(**self.__request.dict())
+            rslt = self.get_controller.run(**self.__request.dict())
             self.__set_response_status_code(self.expected_status_code if rslt else BAD_REQUEST)
             self.__set_response_content(rslt)
             return self.get_response()
@@ -63,18 +63,19 @@ class Base:
         self.__delete_cookie('Authorization')
 
     __controller_instance = None
-    __request: FastBeenRequest = FastBeenRequest()
 
     @property
-    def __get_controller(self):
+    def get_controller(self):
         if self.__controller_instance:
             return self.__controller_instance
         self.__controller_instance = self.controller_class()
         return self.__controller_instance
 
+    __request: FastBeenRequest = FastBeenRequest()
+
     @property
     def __expected_status_code(self):
-        return self.expected_status_code or self.__get_controller.controller_type or OK
+        return self.expected_status_code or self.get_controller.controller_type or OK
 
     def __request_setter(self, **kwargs):
         self.__request.decoder(**kwargs)
