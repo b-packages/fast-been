@@ -49,11 +49,11 @@ class Base:
             rslt.set_cookie(**c.dict())
         return rslt
 
-    def set_access_token(self, pid):
+    def set_access_token(self, pid: str, data: dict):
         self.__set_cookie(
             {
                 'key': 'Authorization',
-                'value': access_token(pid=pid),
+                'value': access_token(pid=pid, data=data),
                 'secure': False,
                 'httponly': True,
             }
@@ -126,7 +126,7 @@ class Base:
             self.response.status_code = UNAUTHORIZED
             return False
         self.__request.beanser_pid = token_decoded['sub']
-        self.set_access_token(token_decoded['sub'])
+        self.set_access_token(pid=token_decoded['sub'], data=token_decoded['data'])
         return True
 
     def __set_cookie(self, value: dict):
