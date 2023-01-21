@@ -4,6 +4,7 @@ from . import Base
 
 
 class Creator(Base):
+    instance = None
 
     def run(self, **kwargs):
         input_data = kwargs.get('input_data')
@@ -13,8 +14,8 @@ class Creator(Base):
 
     def create(self, input_data: dict):
         input_ = self.input_data(**input_data)
-        instance_ = self.create_data(**input_)
-        output_ = self.output_data(**instance_.to_dict())
+        self.instance = self.create_data(**input_)
+        output_ = self.output_data(**self.instance.to_dict())
         return output_
 
     @property
