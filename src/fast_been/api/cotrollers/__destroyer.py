@@ -11,7 +11,10 @@ class Destroyer(Base):
         return self.destroy(lookup_field)
 
     def destroy(self, lookup_field):
-        return self.destroy_data(**{self.lookup_field_name: lookup_field})
+        obj = self.destroy_data(**{self.lookup_field_name: lookup_field})
+        if obj is None:
+            return False
+        return True
 
     @property
     def controller_type(self):
