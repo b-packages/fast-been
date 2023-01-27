@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, DateTime, ForeignKey, Text
+from sqlalchemy import Integer, Column, String, DateTime, ForeignKey, Text, Boolean
 
 from fast_been.utils.hahsings import hash_row_db
 from fast_been.utils.json import JSON
@@ -9,6 +9,7 @@ class Base(object):
     previous_state = Column(Integer, ForeignKey(id), primary_key=True)
     pid = Column(String, index=True, nullable=False)
     created_datetime = Column(DateTime, nullable=False)
+    deleted = Column(Boolean, nullable=False)
     hashed = Column(Text, nullable=True)
 
     def to_dict(self) -> dict:
