@@ -1,4 +1,13 @@
-from sqlalchemy import Integer, Column, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    Integer,
+    Column,
+    String,
+    DateTime,
+    ForeignKey,
+    Text,
+    Boolean,
+)
 
 from fast_been.utils.hahsings import hash_row_db
 from fast_been.utils.json import JSON
@@ -11,6 +20,7 @@ class Base(object):
     created_datetime = Column(DateTime, nullable=False)
     deleted = Column(Boolean, nullable=False)
     hashed = Column(Text, nullable=True)
+    next_state = relationship(back_populates=previous_state, uselist=False)
 
     def to_dict(self) -> dict:
         tmp = self.__all_to_dict().copy()
