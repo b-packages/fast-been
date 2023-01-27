@@ -15,6 +15,13 @@ from fast_been.utils.exceptions.http import (
     MinimumLengthInputValueHTTPException,
     LeastOneRequiredHTTPException,
 )
+from fast_been.utils.json import JSON
+
+from sqlalchemy import Integer, Boolean, Column, String, DateTime, ForeignKey, Text
+
+from fast_been.utils.generators.db.id import unique_id
+from fast_been.utils.hahsings import hash_row_db
+from fast_been.utils.date_time import now
 
 from .__macro import *
 
@@ -57,29 +64,32 @@ class Base(ABC):
                 rslt[key] = value
         return rslt
 
+    def retrieve_data(self, **kwargs):
+        obj = self.__queryset.filter_by(**kwargs).last()
+        return obj
+
     def create_data(self, **kwargs):
-        inst = self.model(**kwargs)
-        inst.__set_pid(kwargs[PID] if PID in kwargs else None)
-        inst.__set_create_datetime()
-        inst.__set_is_active()
-        inst.__set_hashed()
-        self.db.add(inst)
-        self.db.commit()
-        self.db.refresh(inst)
+        inst = self.__create_base(**kwargs)
+        inst = self.__save_base(inst)
         return inst
 
-    def retrieve_data(self, **kwargs):
-        return self.__queryset.filter_by(**kwargs).first()
+    def update_data(self, lookup_field, **kwargs):
+        obj = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+        data = obj.to_dict()
+        data.update(kwargs)
+        inst = self.__create_base(**data)
+        obj = self.__save_base(inst)
+        return obj
 
-    def destroy_data(self, **kwargs):
-        inst = self.retrieve_data(**kwargs)
-        if not inst:
-            return False
-        inst.is_active = False
-        self.db.add(inst)
-        self.db.commit()
-        self.db.refresh(inst)
-        return True
+    def destroy_data(self, lookup_field):
+        obj = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+        if not obj:
+            return None
+        data = obj.to_dict()
+        inst = self.create_data(**data)
+        inst.deleted = True
+        obj = self.__save_base(inst)
+        return obj
 
     def list_data(self, **kwargs):
         rslt = self.__queryset
@@ -300,3 +310,18 @@ class Base(ABC):
     def __field_control_options_mapper(self, controller_name, key, value):
         return self.__controllers[controller_name](
             key=key, value=value) if controller_name in self.__controllers else value
+
+    def __create_base(self, **kwargs):
+        inst = self.model(**kwargs)
+        inst.pid = kwargs.get(PID) or unique_id()
+        inst.created_datetime = now()
+        inst.previous_state = kwargs.get(PREVIOUS_STATE)
+        inst.deleted = False
+        return inst
+
+    def __save_base(self, instance):
+        instance.hashed = instance.hash()
+        self.db.add(instance)
+        self.db.commit()
+        self.db.refresh(instance)
+        return instance
