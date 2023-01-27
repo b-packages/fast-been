@@ -70,6 +70,8 @@ class Base(ABC):
 
     def update_data(self, lookup_field, **kwargs):
         obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
+        if obj is None:
+            return None
         data = obj.to_dict()
         data.update(kwargs)
         inst = self.__create_base(**data)
@@ -79,7 +81,7 @@ class Base(ABC):
 
     def destroy_data(self, lookup_field):
         obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
-        if not obj:
+        if obj is None:
             return None
         data = obj.to_dict()
         inst = self.__create_base(**data)
