@@ -4,19 +4,7 @@ from typing import Union, Optional
 from sqlalchemy.orm import Session
 
 from fast_been.utils.date_time import now
-from fast_been.utils.exceptions.http import (
-    RequiredInputValueHTTPException,
-    AllowNullInputValueHTTPException,
-    AllowBlankInputValueHTTPException,
-    UniqueInputValueHTTPException,
-    RegexValidatorInputValueHTTPException,
-    TypeInputValueHTTPException,
-    MaximumValueInputValueHTTPException,
-    MinimumValueInputValueHTTPException,
-    MaximumLengthInputValueHTTPException,
-    MinimumLengthInputValueHTTPException,
-    LeastOneRequiredHTTPException,
-)
+from fast_been.utils.exceptions.http import *
 from fast_been.utils.generators.db.id import unique_id
 from .__macro import *
 
@@ -65,8 +53,8 @@ class Base(ABC):
 
     def create_data(self, **kwargs):
         inst = self.__create_base(**kwargs)
-        inst = self.__save_base(inst)
-        return inst
+        obj = self.__save_base(inst)
+        return obj
 
     def update_data(self, lookup_field, **kwargs):
         obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
@@ -91,14 +79,14 @@ class Base(ABC):
         return obj
 
     def list_data(self, **kwargs):
-        rslt = self.__queryset
+        qryst = self.__queryset
         if FILTERS in kwargs:
             if kwargs[FILTERS]:
-                rslt = rslt.filter_by(**kwargs[FILTERS])
+                qryst = qryst.filter_by(**kwargs[FILTERS])
         if ORDERING in kwargs:
             if kwargs[ORDERING]:
-                rslt = rslt.order_by(*kwargs[ORDERING])
-        return rslt.all()
+                qryst = qryst.order_by(*kwargs[ORDERING])
+        return qryst.all()
 
     __field_control_options_: Union[dict, None] = None
     __queryset_ = None
