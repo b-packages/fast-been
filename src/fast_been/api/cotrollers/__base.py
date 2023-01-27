@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Union, Optional
+
 from sqlalchemy.orm import Session
 
+from fast_been.utils.date_time import now
 from fast_been.utils.exceptions.http import (
     RequiredInputValueHTTPException,
     AllowNullInputValueHTTPException,
@@ -15,14 +17,7 @@ from fast_been.utils.exceptions.http import (
     MinimumLengthInputValueHTTPException,
     LeastOneRequiredHTTPException,
 )
-from fast_been.utils.json import JSON
-
-from sqlalchemy import Integer, Boolean, Column, String, DateTime, ForeignKey, Text
-
 from fast_been.utils.generators.db.id import unique_id
-from fast_been.utils.hahsings import hash_row_db
-from fast_been.utils.date_time import now
-
 from .__macro import *
 
 
@@ -65,7 +60,7 @@ class Base(ABC):
         return rslt
 
     def retrieve_data(self, **kwargs):
-        obj = self.__queryset.filter_by(**kwargs).last()
+        obj = self.__retrieve_base(**kwargs)
         return obj
 
     def create_data(self, **kwargs):
@@ -74,19 +69,21 @@ class Base(ABC):
         return inst
 
     def update_data(self, lookup_field, **kwargs):
-        obj = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+        obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
         data = obj.to_dict()
         data.update(kwargs)
         inst = self.__create_base(**data)
+        inst.previous_state = obj
         obj = self.__save_base(inst)
         return obj
 
     def destroy_data(self, lookup_field):
-        obj = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+        obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
         if not obj:
             return None
         data = obj.to_dict()
-        inst = self.create_data(**data)
+        inst = self.__create_base(**data)
+        inst.previous_state = obj
         inst.deleted = True
         obj = self.__save_base(inst)
         return obj
@@ -95,11 +92,11 @@ class Base(ABC):
         rslt = self.__queryset
         if FILTERS in kwargs:
             if kwargs[FILTERS]:
-                rslt = rslt.filter_by(**kwargs[FILTERS]).all()
+                rslt = rslt.filter_by(**kwargs[FILTERS])
         if ORDERING in kwargs:
             if kwargs[ORDERING]:
-                rslt = rslt.order_by(*kwargs[ORDERING]).all()
-        return rslt
+                rslt = rslt.order_by(*kwargs[ORDERING])
+        return rslt.all()
 
     __field_control_options_: Union[dict, None] = None
     __queryset_ = None
@@ -123,7 +120,7 @@ class Base(ABC):
     @property
     def __queryset(self):
         if self.__queryset_ is None:
-            self.__queryset_ = self.db.query(self.model).filter(self.model.is_active == True)
+            self.__queryset_ = self.db.query(self.model).filter_by(deleted=False, next_state=None)
         return self.__queryset_
 
     def __default(self, key, value):
@@ -307,15 +304,26 @@ class Base(ABC):
         }
         return self.__controllers_
 
+    @staticmethod
+    def __default_controller(value, **kwargs):
+        return value
+
     def __field_control_options_mapper(self, controller_name, key, value):
-        return self.__controllers[controller_name](
-            key=key, value=value) if controller_name in self.__controllers else value
+        controller = self.__default_controller
+        if controller_name in self.__controllers:
+            controller = self.__controllers[controller_name]
+        ret = controller(key=key, value=value)
+        return ret
+
+    def __retrieve_base(self, **kwargs):
+        obj = self.__queryset.filter_by(**kwargs).last()
+        return obj
 
     def __create_base(self, **kwargs):
         inst = self.model(**kwargs)
         inst.pid = kwargs.get(PID) or unique_id()
         inst.created_datetime = now()
-        inst.previous_state = kwargs.get(PREVIOUS_STATE)
+        inst.previous_state = None
         inst.deleted = False
         return inst
 
