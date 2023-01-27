@@ -12,15 +12,11 @@ class Updater(Base):
         return self.update(lookup_field, input_data)
 
     def update(self, lookup_field, input_data):
-        old_instance_ = self.retrieve_data(**{self.lookup_field_name: lookup_field})
-        if not old_instance_:
-            return None
-        data_ = old_instance_.to_dict()
         input_ = self.input_data(**input_data)
-        data_.update(input_)
-        instance_ = self.create_data(**data_)
-        self.destroy_data(**{self.lookup_field_name: lookup_field})
-        output_ = self.output_data(**instance_.to_dict())
+        obj_ = self.update_data(lookup_field, **input_)
+        if obj_ is None:
+            return None
+        output_ = self.output_data(**obj_.to_dict())
         return output_
 
     @property
