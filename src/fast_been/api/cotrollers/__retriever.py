@@ -12,8 +12,10 @@ class Retriever(Base):
         return self.retrieve(lookup_field)
 
     def retrieve(self, lookup_field):
-        instance_ = self.retrieve_data(**{self.lookup_field_name: lookup_field})
-        outputs_ = self.output_data(**instance_.to_dict())
+        obj_ = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+        if not obj_:
+            return None
+        outputs_ = self.output_data(**obj_.to_dict())
         return outputs_
 
     @property
