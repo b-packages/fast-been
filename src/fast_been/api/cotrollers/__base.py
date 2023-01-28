@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Union, Optional
-
 from sqlalchemy.orm import Session
 
-from fast_been.utils.date_time import now
-from fast_been.utils.exceptions.http import *
+from fast_been.utils.schemas.controller.list import OutputList as OutputListSchema
 from fast_been.utils.generators.db.id import unique_id
+from fast_been.conf.base_settings import BASE_SETTINGS
+from fast_been.utils.exceptions.http import *
+from fast_been.utils.date_time import now
+
 from .__macro import *
 
 
@@ -17,6 +19,9 @@ class Base(ABC):
     field_control_options: dict = dict()
     output_fields: list = list()
     least_one_required: Optional[list] = None
+    pagination: bool = False
+    filter_set = []
+    order_set = []
 
     @abstractmethod
     def run(self, *args, **kwargs):
@@ -80,20 +85,39 @@ class Base(ABC):
         obj = self.__save_base(inst)
         return obj
 
-    def list_data(self, **kwargs):
+    def list_data(self, filters: dict = None, ordering: list = None, **kwargs):
         qryst = self.__queryset
-        if FILTERS in kwargs:
-            if kwargs[FILTERS]:
-                qryst = qryst.filter_by(**kwargs[FILTERS])
-        if ORDERING in kwargs:
-            if kwargs[ORDERING]:
-                qryst = qryst.order_by(*kwargs[ORDERING])
-        return qryst.all()
+        flts = self.__filters(filters)
+        ords = self.__ordering(ordering)
+        qryst = qryst.filter_by(**flts) if flts else qryst
+        qryst = qryst.filter_by(*ords) if ords else qryst
+        return self.__paginate(qryst, **kwargs)
+
+    def __paginate(self, query_set, page=None, page_size=None):
+        if not self.__pagination:
+            return query_set.all()
+        cnt = query_set.count()
+        cpg = self.__page(page)
+        pgs = self.__page_size(page_size) or cnt
+        tmp = query_set.all() if cnt == pgs else query_set.paginate(page=cpg, per_page=pgs).all()
+        rslt = [self.output_data(**i.to_dict()) for i in tmp]
+        ret = OutputListSchema(
+            count=cnt,
+            page_number=cpg,
+            page_size=pgs,
+            result=rslt,
+        )
+        return ret.dict()
 
     __field_control_options_: Union[dict, None] = None
     __queryset_ = None
     __types__controller_ = None
     __controllers_ = None
+    __pagination_ = None
+    __page_ = None
+    __page_size_ = None
+    __filters_ = None
+    __ordering_ = None
 
     @staticmethod
     def __field_control_options_sort_key_func(item):
@@ -325,3 +349,50 @@ class Base(ABC):
         self.db.commit()
         self.db.refresh(instance)
         return instance
+
+    @property
+    def __pagination(self) -> bool:
+        if self.__pagination_ is not None:
+            return self.__pagination_
+        self.__pagination_ = self.pagination or BASE_SETTINGS.PAGINATION.IS_ACTIVE
+        return self.__pagination_
+
+    def __page(self, value: int = None) -> Optional[int]:
+        if self.__page_:
+            return self.__page_
+        value = value or BASE_SETTINGS.PAGINATION.DEFAULT_START_PAGE_NUMBER
+        self.__page_ = value if self.__pagination else 1
+        return self.__page_
+
+    def __page_size(self, value: int = None) -> Optional[int]:
+        if self.__page_size_:
+            return self.__page_size_
+        value = value or BASE_SETTINGS.PAGINATION.PAGE_SIZE
+        self.__page_size_ = value if self.__pagination else None
+        return self.__page_size_
+
+    def __filters(self, value: dict) -> Optional[dict]:
+        if self.__filters_:
+            return self.__filters_
+        if value is None:
+            rst = None
+        else:
+            rst = dict()
+            for k, v in value.items():
+                if k in self.filter_set:
+                    rst[k] = v
+        self.__filters_ = rst
+        return self.__filters_
+
+    def __ordering(self, value: list) -> Optional[list]:
+        if self.__ordering_:
+            return self.__ordering_
+        if value is None:
+            rst = None
+        else:
+            rst = list()
+            for i in value:
+                if i in self.order_set:
+                    rst.append(i)
+        self.__ordering_ = rst
+        return self.__ordering_
