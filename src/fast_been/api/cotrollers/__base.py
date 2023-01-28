@@ -60,6 +60,8 @@ class Base(ABC):
         obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
         if obj is None:
             return None
+        if not len(kwargs):
+            return obj
         data = obj.to_dict()
         data.update(kwargs)
         inst = self.__create_base(**data)
