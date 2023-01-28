@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from typing import Optional, List, Dict
 
 from fast_been.conf.base_settings import BASE_SETTINGS
@@ -37,3 +37,4 @@ class QueryParams(BaseModel):
     filters: Optional[Dict[str, str]]
     ordering: Optional[List[str]]
     search: Optional[str]
+    url: Optional[HttpUrl]
