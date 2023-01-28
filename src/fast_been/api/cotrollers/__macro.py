@@ -29,6 +29,10 @@ MINIMUM_LENGTH = 'minimum_length'
 CONVERTER = 'converter'
 FILTERS = 'filters'
 ORDERING = 'ordering'
+PAGINATE = 'paginate'
+PAGE = 'page'
+PAGE_SIZE = 'page_size'
+
 FIELD_CONTROL_OPTIONS_METER = {
     DEFAULT: 1,
     REQUIRED: 2,
@@ -43,5 +47,3 @@ FIELD_CONTROL_OPTIONS_METER = {
     REGEX_VALIDATOR: 11,
     CONVERTER: 12
 }
-
-
