@@ -2,7 +2,7 @@ from datetime import datetime
 from jose import jwt
 
 from fastapi.responses import JSONResponse
-from fastapi import Request, HTTPException
+from fastapi import Request
 
 from fast_been.utils.http.response.status.code import OK, BAD_REQUEST, CREATED, NO_CONTENT, UNAUTHORIZED
 from fast_been.conf.base_settings import BASE_SETTINGS
