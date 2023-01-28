@@ -34,7 +34,8 @@ class Request(BaseModel):
             kwargs[FILTERS] = base_request.query_params.get(FILTERS)
             kwargs[ORDERING] = base_request.query_params.get(ORDERING)
             kwargs[SEARCH] = base_request.query_params.get(SEARCH)
-            kwargs[URL] = str(base_request.url)
+            tmp = str(base_request.url)
+            kwargs[URL] = tmp.split('?')[0]
         return kwargs
 
     def __kwargs(self, **kwargs):

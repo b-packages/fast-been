@@ -352,6 +352,7 @@ class Base(ABC):
             page_number=query_params.page,
             page_size=query_params.page_size,
             result=rslt,
+            url=query_params.url,
         )
         return ret.dict()
 
