@@ -1,6 +1,6 @@
 import math
 from typing import Optional
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 COUNT = 'count'
 PAGE_SIZE = 'page_size'
@@ -28,6 +28,6 @@ class OutputList(BaseModel):
     count: int
     page_number: int = 1
     page_size: int
-    next_page: Optional[HttpUrl]
-    previous_page: Optional[HttpUrl]
+    next_page: Optional[str]
+    previous_page: Optional[str]
     result: list = []

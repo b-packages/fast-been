@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import Optional, Any
 
 from .__macro import *
@@ -15,7 +15,7 @@ class Request(BaseModel):
     beanser_pid: Optional[str]
     # url
     lookup_field: Any
-    url: Optional[HttpUrl]
+    url: str = ''
     # query params
     page: Optional[int]
     page_size: Optional[int]
@@ -34,7 +34,7 @@ class Request(BaseModel):
             kwargs[FILTERS] = base_request.query_params.get(FILTERS)
             kwargs[ORDERING] = base_request.query_params.get(ORDERING)
             kwargs[SEARCH] = base_request.query_params.get(SEARCH)
-            kwargs[URL] = base_request.query_params.get(URL)
+            kwargs[URL] = str(base_request.url)
         return kwargs
 
     def __kwargs(self, **kwargs):
