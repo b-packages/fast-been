@@ -1,4 +1,5 @@
 from fast_been.utils.macros import ControllerType
+from fast_been.utils.exceptions.http import ThereIsNoInputDataToRegisterHTTPException
 
 from . import Base
 
@@ -9,7 +10,7 @@ class Creator(Base):
     def run(self, **kwargs):
         input_data = kwargs.get('input_data')
         if input_data is None:
-            return None
+            raise ThereIsNoInputDataToRegisterHTTPException()
         return self.create(input_data)
 
     def create(self, input_data: dict):
