@@ -26,16 +26,13 @@ class Base:
     response: FastBeenResponse = FastBeenResponse()
 
     def run(self, **kwargs):
-        try:
-            self.__request_setter(**kwargs)
-            if not self.__does_it_have_access():
-                return self.get_response()
-            rslt = self.get_controller.run(**self.__request.dict())
-            self.__set_response_status_code(self.expected_status_code if rslt else BAD_REQUEST)
-            self.__set_response_content(rslt)
+        self.__request_setter(**kwargs)
+        if not self.__does_it_have_access():
             return self.get_response()
-        except HTTPException as exp:
-            return exp
+        rslt = self.get_controller.run(**self.__request.dict())
+        self.__set_response_status_code(self.expected_status_code if rslt else BAD_REQUEST)
+        self.__set_response_content(rslt)
+        return self.get_response()
 
     def get_response(self):
         rslt = JSONResponse(
