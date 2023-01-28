@@ -8,6 +8,7 @@ from typing import Optional
 
 
 class Lister(Base):
+    pagination: bool = False
 
     def run(self, **kwargs) -> dict:
         page = kwargs.get('page')
@@ -38,7 +39,7 @@ class Lister(Base):
 
     @property
     def __pagination(self) -> bool:
-        return BASE_SETTINGS.PAGINATION.IS_ACTIVE
+        return self.pagination or BASE_SETTINGS.PAGINATION.IS_ACTIVE
 
     def __page(self, value: int = None) -> Optional[int]:
         if value is None:
