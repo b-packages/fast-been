@@ -306,7 +306,7 @@ class Base(ABC):
         return ret
 
     def __retrieve_base(self, **kwargs):
-        obj = self.__queryset.filter_by(**kwargs).last()
+        obj = self.__queryset.filter_by(**kwargs).order_by(self.model.id.desc()).first()
         return obj
 
     def __create_base(self, **kwargs):
