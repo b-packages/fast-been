@@ -93,22 +93,6 @@ class Base(ABC):
         qryst = qryst.filter_by(*ords) if ords else qryst
         return self.__paginate(qryst, **kwargs)
 
-    def __paginate(self, query_set, page=None, page_size=None):
-        if not self.__pagination:
-            return query_set.all()
-        cnt = query_set.count()
-        cpg = self.__page(page)
-        pgs = self.__page_size(page_size) or cnt
-        tmp = query_set.all() if cnt == pgs else query_set.paginate(page=cpg, per_page=pgs).all()
-        rslt = [self.output_data(**i.to_dict()) for i in tmp]
-        ret = OutputListSchema(
-            count=cnt,
-            page_number=cpg,
-            page_size=pgs,
-            result=rslt,
-        )
-        return ret.dict()
-
     __field_control_options_: Union[dict, None] = None
     __queryset_ = None
     __types__controller_ = None
@@ -349,6 +333,22 @@ class Base(ABC):
         self.db.commit()
         self.db.refresh(instance)
         return instance
+
+    def __paginate(self, query_set, page=None, page_size=None, **kwargs):
+        cnt = query_set.count()
+        cpg = self.__page(page)
+        pgs = self.__page_size(page_size) or cnt
+        pgs = pgs if pgs < cnt else cnt
+        strt = (cpg - 1) * pgs
+        end = strt + pgs
+        rslt = [self.output_data(**i.to_dict()) for i in query_set.all()[strt:end]]
+        ret = OutputListSchema(
+            count=cnt,
+            page_number=cpg,
+            page_size=pgs,
+            result=rslt,
+        )
+        return ret.dict()
 
     @property
     def __pagination(self) -> bool:
