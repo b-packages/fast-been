@@ -73,7 +73,7 @@ class Lister(Base):
         return rst
 
     def __list_pagination_false(self, instances) -> dict:
-        count = instances.count()
+        count = len(instances)
         page_number = 1
         page_size = count
         result = [self.output_data(**i.to_dict()) for i in instances]
@@ -90,7 +90,7 @@ class Lister(Base):
         return rslt
 
     def __list_pagination_true(self, instances, page: int, page_size: int) -> dict:
-        count = instances.count()
+        count = len(instances)
         tmp = instances.paginate(page=page, per_page=page_size)
         result = [self.output_data(**i.to_dict()) for i in tmp]
         number_of_pages = math.ceil(count / page_size)
