@@ -1,26 +1,42 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from typing import Optional, Any
+
+from .__macro import *
 
 
 class Request(BaseModel):
-    base_request: Any = None
-    input_data: Optional[dict] = None
-    lookup_field: Any = None
-    page: Optional[int] = None
-    page_size: Optional[int] = None
-    filters: Optional[list] = None
-    ordering: Optional[list] = None
-    search: Optional[list] = None
-    beanser_pid: Optional[str] = None
 
-    def decoder(self, **kwargs):
-        _okwargs = dict()
-        self.input_data = kwargs.get('input_data')
-        self.lookup_field = kwargs.get('lookup_field')
-        self.base_request = kwargs.get('request')
-        if self.base_request:
-            self.page = self.base_request.query_params.get('page')
-            self.page_size = self.base_request.query_params.get('page_size')
-            self.filters = self.base_request.query_params.get('filters')
-            self.ordering = self.base_request.query_params.get('ordering')
-            self.search = self.base_request.query_params.get('search')
+    def __init__(self, **kwargs):
+        super(Request, self).__init__(**self.__kwargs(**kwargs))
+
+    # input data
+    input_data: Optional[dict]
+    # auth
+    beanser_pid: Optional[str]
+    # url
+    lookup_field: Any
+    url: Optional[HttpUrl]
+    # query params
+    page: Optional[int]
+    page_size: Optional[int]
+    filters: Optional[list]
+    ordering: Optional[list]
+    search: Optional[list]
+    # base request
+    base_request: Any
+
+    @staticmethod
+    def __base_request_decoder(**kwargs):
+        base_request = kwargs[BASE_REQUEST] = kwargs.get(REQUEST)
+        if base_request:
+            kwargs[PAGE] = base_request.query_params.get(PAGE)
+            kwargs[PAGE_SIZE] = base_request.query_params.get(PAGE_SIZE)
+            kwargs[FILTERS] = base_request.query_params.get(FILTERS)
+            kwargs[ORDERING] = base_request.query_params.get(ORDERING)
+            kwargs[SEARCH] = base_request.query_params.get(SEARCH)
+            kwargs[URL] = base_request.query_params.get(URL)
+        return kwargs
+
+    def __kwargs(self, **kwargs):
+        kwargs = self.__base_request_decoder(**kwargs)
+        return kwargs

@@ -68,14 +68,14 @@ class Base:
         self.__controller_instance = self.controller_class()
         return self.__controller_instance
 
-    __request: FastBeenRequest = FastBeenRequest()
+    __request: FastBeenRequest
 
     @property
     def __expected_status_code(self):
         return self.expected_status_code or self.get_controller.controller_type or OK
 
     def __request_setter(self, **kwargs):
-        self.__request.decoder(**kwargs)
+        self.__request = FastBeenRequest(**kwargs)
 
     @staticmethod
     def __default_status_code_controller(value):
