@@ -1,4 +1,5 @@
-from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import (
     Integer,
     Column,
@@ -15,12 +16,18 @@ from fast_been.utils.json import JSON
 
 class Base(object):
     id = Column(Integer, primary_key=True, index=True)
-    previous_state = Column(Integer, ForeignKey(id), primary_key=True)
     pid = Column(String, index=True, nullable=False)
     created_datetime = Column(DateTime, nullable=False)
     deleted = Column(Boolean, nullable=False)
     hashed = Column(Text, nullable=True)
-    next_state = relationship(back_populates=previous_state, uselist=False)
+
+    @declared_attr
+    def previous_state_id(cls):
+        return Column(Integer, ForeignKey(cls.id))
+
+    @declared_attr
+    def next_state(cls):
+        return relationship(cls, backref=backref('previous_state', remote_side=[cls.id]), uselist=False)
 
     def to_dict(self) -> dict:
         tmp = self.__all_to_dict().copy()
