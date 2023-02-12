@@ -15,7 +15,6 @@ class Destroyer(Base):
         obj = self.destroy_data(lookup_field)
         if obj is None:
             raise NotFoundHTTPException()
-        return {}
 
     @property
     def controller_type(self):
