@@ -30,7 +30,7 @@ class Base:
         if not self.__does_it_have_access():
             return self.get_response()
         rslt = self.get_controller.run(**self.__request.dict())
-        self.__set_response_status_code(self.expected_status_code if rslt else BAD_REQUEST)
+        self.__set_response_status_code(self.expected_status_code if rslt is not None else BAD_REQUEST)
         self.__set_response_content(rslt)
         return self.get_response()
 
