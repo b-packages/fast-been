@@ -13,13 +13,13 @@ URL = 'url'
 class OutputList(BaseModel):
     def __init__(self, **kwargs):
         nxt = None
-        number_of_pages = math.ceil(kwargs[COUNT] / kwargs[PAGE_SIZE])
-        if kwargs[PAGE_NUMBER] < number_of_pages:
+        number_of_pages = math.ceil(kwargs[COUNT] / kwargs[PAGE_SIZE]) if kwargs[COUNT] != 0 else 0
+        if 0 < kwargs[PAGE_NUMBER] < number_of_pages:
             nxt = '{}?page={}&page_size={}'.format(kwargs[URL], kwargs[PAGE_NUMBER] + 1, kwargs[PAGE_SIZE])
         kwargs[NEXT_PAGE] = nxt
 
         prv = None
-        if 1 < kwargs[PAGE_NUMBER]:
+        if 1 < kwargs[PAGE_NUMBER] < number_of_pages:
             prv = '{}?page={}&page_size={}'.format(kwargs[URL], kwargs[PAGE_NUMBER] - 1, kwargs[PAGE_SIZE])
         kwargs[PREVIOUS_PAGE] = prv
 
