@@ -1,19 +1,18 @@
 from datetime import datetime
+
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from jose import jwt
 
-from fastapi.responses import JSONResponse
-from fastapi import Request
-
-from fast_been.utils.http.response.status.code import OK, BAD_REQUEST, CREATED, NO_CONTENT, UNAUTHORIZED
 from fast_been.conf.base_settings import BASE_SETTINGS
+from fast_been.utils.date_time import now
 from fast_been.utils.generators.auth.jwt import access_token
-from fast_been.utils.macros import ControllerType
+from fast_been.utils.http.response.status.code import UNAUTHORIZED
 from fast_been.utils.schemas.http import (
     Request as FastBeenRequest,
     Response as FastBeenResponse,
     Cookie as FastBeenCookie,
 )
-from fast_been.utils.date_time import now
 
 JWT_SECRET_KEY = BASE_SETTINGS.JWT.SECRET_KEY
 JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
@@ -70,25 +69,8 @@ class Base:
 
     __request: FastBeenRequest
 
-    @property
-    def __expected_status_code(self):
-        return self.expected_status_code or self.get_controller.controller_type or OK
-
     def __request_setter(self, **kwargs):
         self.__request = FastBeenRequest(**kwargs)
-
-    @staticmethod
-    def __default_status_code_controller(value):
-        mapper = {
-            ControllerType.creator: CREATED,
-            ControllerType.destroyer: NO_CONTENT,
-            ControllerType.lister: OK,
-            ControllerType.retriever: OK,
-            ControllerType.updater: OK,
-        }
-        if value in mapper:
-            return mapper[value]
-        return None
 
     def __set_response_status_code(self, value):
         self.response.status_code = value
