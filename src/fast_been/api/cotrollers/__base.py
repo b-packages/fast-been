@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Union, Optional
 from sqlalchemy.orm import Session
+import math
 
 from fast_been.utils.generators.db.id import unique_id
 from fast_been.conf.base_settings import BASE_SETTINGS
@@ -343,10 +344,13 @@ class Base(ABC):
     def __paginate(self, query_set, query_params: QueryParamsSchema):
         cnt = query_set.count()
         query_params.page_size = query_params.page_size if query_params.page_size < cnt else cnt
+        number_of_pages = math.ceil(cnt / query_params.page_size) if cnt != 0 else 0
+        query_params.page = query_params.page if query_params.page <= number_of_pages else number_of_pages
         strt = (query_params.page - 1) * query_params.page_size
         end = strt + query_params.page_size
         rslt = [self.output_data(**i.to_dict()) for i in query_set.all()[strt:end]]
         ret = OutputListSchema(
+            number_of_pages=number_of_pages,
             count=cnt,
             page_number=query_params.page,
             page_size=query_params.page_size,
