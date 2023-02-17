@@ -1,4 +1,3 @@
-import math
 from typing import Optional
 from pydantic import BaseModel
 
@@ -8,19 +7,22 @@ PAGE_NUMBER = 'page_number'
 NEXT_PAGE = 'next_page'
 PREVIOUS_PAGE = 'previous_page'
 URL = 'url'
+NUMBER_OF_PAGES = 'number_of_pages'
 
 
 class OutputList(BaseModel):
     def __init__(self, **kwargs):
         nxt = None
-        number_of_pages = math.ceil(kwargs[COUNT] / kwargs[PAGE_SIZE]) if kwargs[COUNT] != 0 else 0
+        number_of_pages = kwargs.pop(NUMBER_OF_PAGES)
         if 0 < kwargs[PAGE_NUMBER] < number_of_pages:
-            nxt = '{}?page={}&page_size={}'.format(kwargs[URL], kwargs[PAGE_NUMBER] + 1, kwargs[PAGE_SIZE])
+            nxt = '{}?page={}&page_size={}'.format(
+                kwargs[URL], kwargs[PAGE_NUMBER] + 1, kwargs[PAGE_SIZE])
         kwargs[NEXT_PAGE] = nxt
 
         prv = None
         if 1 < kwargs[PAGE_NUMBER] <= number_of_pages:
-            prv = '{}?page={}&page_size={}'.format(kwargs[URL], kwargs[PAGE_NUMBER] - 1, kwargs[PAGE_SIZE])
+            prv = '{}?page={}&page_size={}'.format(
+                kwargs[URL], kwargs[PAGE_NUMBER] - 1, kwargs[PAGE_SIZE])
         kwargs[PREVIOUS_PAGE] = prv
 
         super(OutputList, self).__init__(**kwargs)
