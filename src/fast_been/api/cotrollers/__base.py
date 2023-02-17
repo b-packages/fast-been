@@ -27,7 +27,7 @@ class Base(ABC):
     order_set = []
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def run(self):
         pass
 
     @abstractmethod
