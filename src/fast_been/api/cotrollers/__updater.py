@@ -9,14 +9,17 @@ from . import Base
 
 
 class Updater(Base):
-    def run(self, **kwargs):
-        lookup_field = kwargs.get('lookup_field')
-        if lookup_field is None:
+
+    def __init__(self, **kwargs):
+        self.__lookup_field = kwargs.get('lookup_field')
+        if self.__lookup_field is None:
             raise LookupFieldIsNotSetHTTPException()
-        input_data = kwargs.get('input_data')
-        if input_data is None:
+        self.__input_data = kwargs.get('input_data')
+        if self.__input_data is None:
             raise ThereIsNoInputDataToRegisterHTTPException()
-        return self.update(lookup_field, input_data)
+
+    def run(self, **kwargs):
+        return self.update(self.__lookup_field, self.__input_data)
 
     def update(self, lookup_field, input_data):
         input_ = self.input_data(**input_data)
