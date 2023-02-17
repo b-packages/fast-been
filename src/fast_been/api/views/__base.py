@@ -23,6 +23,7 @@ from fast_been.utils.exceptions.http import (
     LoginRequiredHTTPException,
     TokenIsNotAcceptedHTTPException,
     TokenHasExpiredHTTPException,
+    AccessDeniedHTTPException,
 )
 from fast_been.utils.schemas.http import (
     Request as FastBeenRequest,
@@ -55,15 +56,14 @@ class Base:
         request: Request = self.request.base_request
         if WWW_AUTHORIZATION_MACRO not in request.cookies:
             raise LoginRequiredHTTPException()
-        token_decoded = jwt.decode(
-            request.cookies[WWW_AUTHORIZATION_MACRO],
-            key=JWT_SECRET_KEY,
-            algorithms=JWT_ALGORITHM,
-        )
-        if token_decoded is None:
-            raise TokenIsNotAcceptedHTTPException()
-        if datetime.utcfromtimestamp(token_decoded[EXP_MACRO]) < now():
-            raise TokenHasExpiredHTTPException()
+        try:
+            token_decoded = jwt.decode(
+                request.cookies[WWW_AUTHORIZATION_MACRO],
+                key=JWT_SECRET_KEY,
+                algorithms=JWT_ALGORITHM,
+            )
+        except:
+            raise AccessDeniedHTTPException()
         self.request.beanser_pid = token_decoded[SUB_MACRO]
         self.set_access_token(pid=token_decoded[SUB_MACRO], data=token_decoded[DATA_MACRO])
 
