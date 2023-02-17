@@ -9,10 +9,10 @@ class Lister(Base):
         self.__params = kwargs
 
     def run(self) -> dict:
-        return self.list(**self.__params)
+        return self.list()
 
-    def list(self, **kwargs) -> dict:
-        return self.list_data(**kwargs)
+    def list(self) -> dict:
+        return self.list_data(**self.__params)
 
     @property
     def controller_type(self) -> str:
