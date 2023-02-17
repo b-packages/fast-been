@@ -19,7 +19,7 @@ class OutputList(BaseModel):
         kwargs[NEXT_PAGE] = nxt
 
         prv = None
-        if 1 < kwargs[PAGE_NUMBER] < number_of_pages:
+        if 1 < kwargs[PAGE_NUMBER] <= number_of_pages:
             prv = '{}?page={}&page_size={}'.format(kwargs[URL], kwargs[PAGE_NUMBER] - 1, kwargs[PAGE_SIZE])
         kwargs[PREVIOUS_PAGE] = prv
 
