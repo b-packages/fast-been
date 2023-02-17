@@ -44,15 +44,15 @@ class Base:
         self.__set_request(**kwargs)
         self.__access_checked()
 
-    __request: FastBeenRequest
+    request: FastBeenRequest
 
     def __set_request(self, **kwargs):
-        self.__request = FastBeenRequest(**kwargs)
+        self.request = FastBeenRequest(**kwargs)
 
     def __access_checked(self):
         if not self.need_authentication:
             return
-        request: Request = self.__request.base_request
+        request: Request = self.request.base_request
         if WWW_AUTHORIZATION_MACRO not in request.cookies:
             raise LoginRequiredHTTPException()
         token_decoded = jwt.decode(
@@ -64,7 +64,7 @@ class Base:
             raise TokenIsNotAcceptedHTTPException()
         if datetime.utcfromtimestamp(token_decoded[EXP_MACRO]) < now():
             raise TokenHasExpiredHTTPException()
-        self.__request.beanser_pid = token_decoded[SUB_MACRO]
+        self.request.beanser_pid = token_decoded[SUB_MACRO]
         self.set_access_token(pid=token_decoded[SUB_MACRO], data=token_decoded[DATA_MACRO])
 
     def set_access_token(self, pid: str, data: dict):
@@ -100,7 +100,7 @@ class Base:
     def get_controller(self):
         if self.__controller_instance:
             return self.__controller_instance
-        self.__controller_instance = self.controller_class(**self.__request.dict())
+        self.__controller_instance = self.controller_class(**self.request.dict())
         return self.__controller_instance
 
     __response: FastBeenResponse = FastBeenResponse()
