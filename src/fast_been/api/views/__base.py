@@ -1,18 +1,35 @@
 from datetime import datetime
-
-from fastapi import Request
-from fastapi.responses import JSONResponse
 from jose import jwt
 
-from fast_been.conf.base_settings import BASE_SETTINGS
-from fast_been.utils.date_time import now
+from fastapi.responses import JSONResponse, Response
+from fastapi import Request
+
 from fast_been.utils.generators.auth.jwt import access_token
-from fast_been.utils.http.response.status.code import UNAUTHORIZED
+from fast_been.utils.http.response.status.code import (
+    OK as OK_HTTP_STATUS_CODE,
+)
+from fast_been.conf.base_settings import BASE_SETTINGS
+from fast_been.__macros import (
+    WWW_AUTHORIZATION as WWW_AUTHORIZATION_MACRO,
+    VALUE as VALUE_MACRO,
+    SECURE as SECURE_MACRO,
+    HTTPONLY as HTTPONLY_MACRO,
+    KEY as KEY_MACRO,
+    EXP as EXP_MACRO,
+    SUB as SUB_MACRO,
+    DATA as DATA_MACRO,
+)
+from fast_been.utils.exceptions.http import (
+    LoginRequiredHTTPException,
+    TokenIsNotAcceptedHTTPException,
+    TokenHasExpiredHTTPException,
+)
 from fast_been.utils.schemas.http import (
     Request as FastBeenRequest,
     Response as FastBeenResponse,
     Cookie as FastBeenCookie,
 )
+from fast_been.utils.date_time import now
 
 JWT_SECRET_KEY = BASE_SETTINGS.JWT.SECRET_KEY
 JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
@@ -20,43 +37,62 @@ JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
 
 class Base:
     controller_class = None
-    expected_status_code = None
+    expected_status_code = OK_HTTP_STATUS_CODE
     need_authentication = False
-    response: FastBeenResponse = FastBeenResponse()
 
-    def run(self, **kwargs):
-        self.__request_setter(**kwargs)
-        if not self.__does_it_have_access():
-            return self.get_response()
-        rslt = self.get_controller.run(**self.__request.dict())
-        self.__set_response_status_code(self.expected_status_code)
-        self.__set_response_content(rslt)
-        return self.get_response()
+    def __init__(self, **kwargs):
+        self.__set_request(**kwargs)
+        self.__access_checked()
 
-    def get_response(self):
-        rslt = JSONResponse(
-            status_code=self.response.status_code,
-            content=self.response.content,
-            headers=self.response.headers,
-            media_type=self.response.media_type,
-            background=self.response.background,
+    __request: FastBeenRequest
+
+    def __set_request(self, **kwargs):
+        self.__request = FastBeenRequest(**kwargs)
+
+    def __access_checked(self):
+        if not self.need_authentication:
+            return
+        request: Request = self.__request.base_request
+        if WWW_AUTHORIZATION_MACRO not in request.cookies:
+            raise LoginRequiredHTTPException()
+        token_decoded = jwt.decode(
+            request.cookies[WWW_AUTHORIZATION_MACRO],
+            key=JWT_SECRET_KEY,
+            algorithms=JWT_ALGORITHM,
         )
-        for c in self.response.cookies:
-            rslt.set_cookie(**c.dict())
-        return rslt
+        if token_decoded is None:
+            raise TokenIsNotAcceptedHTTPException()
+        if datetime.utcfromtimestamp(token_decoded[EXP_MACRO]) < now():
+            raise TokenHasExpiredHTTPException()
+        self.__request.beanser_pid = token_decoded[SUB_MACRO]
+        self.set_access_token(pid=token_decoded[SUB_MACRO], data=token_decoded[DATA_MACRO])
 
     def set_access_token(self, pid: str, data: dict):
-        self.__set_cookie(
+        self.set_cookie(
             {
-                'key': 'Authorization',
-                'value': access_token(pid=pid, data=data),
-                'secure': False,
-                'httponly': True,
+                KEY_MACRO: WWW_AUTHORIZATION_MACRO,
+                VALUE_MACRO: access_token(pid=pid, data=data),
+                SECURE_MACRO: False,
+                HTTPONLY_MACRO: True,
             }
         )
 
     def delete_access_token(self):
-        self.__delete_cookie('Authorization')
+        self.delete_cookie(WWW_AUTHORIZATION_MACRO)
+
+    def set_cookie(self, value: dict):
+        self.__response.cookies.append(FastBeenCookie(**value))
+
+    def delete_cookie(self, key):
+        for i, c in enumerate(self.__response.cookies):
+            if c.key == key:
+                self.__response.cookies.pop(i)
+                return
+
+    def run(self):
+        rslt = self.get_controller.run()
+        self.set_response_content(rslt)
+        return self.response
 
     __controller_instance = None
 
@@ -64,56 +100,36 @@ class Base:
     def get_controller(self):
         if self.__controller_instance:
             return self.__controller_instance
-        self.__controller_instance = self.controller_class()
+        self.__controller_instance = self.controller_class(**self.__request.dict())
         return self.__controller_instance
 
-    __request: FastBeenRequest
+    __response: FastBeenResponse = FastBeenResponse()
 
-    def __request_setter(self, **kwargs):
-        self.__request = FastBeenRequest(**kwargs)
-
-    def __set_response_status_code(self, value):
-        self.response.status_code = value
-
-    def __set_response_content(self, value):
-        self.response.content = value
-
-    def __set_response_headers(self, value):
-        self.response.headers = value
-
-    def __set_response_media_type(self, value):
-        self.response.media_type = value
-
-    def __set_response_background(self, value):
-        self.response.background = value
-
-    def __does_it_have_access(self):
-        request: Request = self.__request.base_request
-        if not self.need_authentication:
-            return True
-        if 'Authorization' not in request.cookies:
-            self.response.status_code = UNAUTHORIZED
-            return False
-        token_decoded = jwt.decode(
-            request.cookies['Authorization'],
-            key=JWT_SECRET_KEY,
-            algorithms=JWT_ALGORITHM,
+    @property
+    def response(self):
+        response = JSONResponse if self.__response.content else Response
+        rslt = response(
+            status_code=self.__response.status_code or self.expected_status_code,
+            content=self.__response.content,
+            headers=self.__response.headers,
+            media_type=self.__response.media_type,
+            background=self.__response.background,
         )
-        if token_decoded is None:
-            self.response.status_code = UNAUTHORIZED
-            return False
-        if datetime.utcfromtimestamp(token_decoded['exp']) < now():
-            self.response.status_code = UNAUTHORIZED
-            return False
-        self.__request.beanser_pid = token_decoded['sub']
-        self.set_access_token(pid=token_decoded['sub'], data=token_decoded['data'])
-        return True
+        for c in self.__response.cookies:
+            rslt.set_cookie(**c.dict())
+        return rslt
 
-    def __set_cookie(self, value: dict):
-        self.response.cookies.append(FastBeenCookie(**value))
+    def set_response_status_code(self, value):
+        self.__response.status_code = value
 
-    def __delete_cookie(self, key):
-        for i, c in enumerate(self.response.cookies):
-            if c.key == key:
-                self.response.cookies.pop(i)
-                return
+    def set_response_content(self, value):
+        self.__response.content = value
+
+    def set_response_headers(self, value):
+        self.__response.headers = value
+
+    def set_response_media_type(self, value):
+        self.__response.media_type = value
+
+    def set_response_background(self, value):
+        self.__response.background = value
