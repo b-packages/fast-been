@@ -5,8 +5,11 @@ from . import Base
 
 class Lister(Base):
 
-    def run(self, **kwargs) -> dict:
-        return self.list(**kwargs)
+    def __init__(self, **kwargs):
+        self.__params = kwargs
+
+    def run(self) -> dict:
+        return self.list(**self.__params)
 
     def list(self, **kwargs) -> dict:
         return self.list_data(**kwargs)
