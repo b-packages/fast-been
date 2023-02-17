@@ -342,7 +342,6 @@ class Base(ABC):
 
     def __paginate(self, query_set, query_params: QueryParamsSchema):
         cnt = query_set.count()
-        query_params.page_size = query_params.page_size or cnt
         query_params.page_size = query_params.page_size if query_params.page_size < cnt else cnt
         strt = (query_params.page - 1) * query_params.page_size
         end = strt + query_params.page_size
