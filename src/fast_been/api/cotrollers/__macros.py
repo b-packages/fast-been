@@ -47,3 +47,6 @@ FIELD_CONTROL_OPTIONS_METER = {
     REGEX_VALIDATOR: 11,
     CONVERTER: 12
 }
+
+LOOKUP_FIELD = 'lookup_field'
+INPUT_DATA = 'input_data'

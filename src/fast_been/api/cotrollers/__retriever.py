@@ -4,21 +4,22 @@ from fast_been.utils.exceptions.http import (
     NotFoundHTTPException,
 )
 
-from . import Base
+from . import APIController as Base
+from .__macros import LOOKUP_FIELD as LOOKUP_FIELD_MACRO
 
 
 class Retriever(Base):
 
     def __init__(self, **kwargs):
-        self.__lookup_field = kwargs.get('lookup_field')
+        self.__lookup_field = kwargs.get(LOOKUP_FIELD_MACRO)
         if self.__lookup_field is None:
             raise LookupFieldIsNotSetHTTPException()
 
     def run(self):
-        return self.retrieve(self.__lookup_field)
+        return self.retrieve()
 
-    def retrieve(self, lookup_field):
-        obj_ = self.retrieve_data(**{self.lookup_field_name: lookup_field})
+    def retrieve(self):
+        obj_ = self.retrieve_data(**{self.lookup_field_name: self.__lookup_field})
         if not obj_:
             raise NotFoundHTTPException()
         outputs_ = self.output_data(**obj_.to_dict())

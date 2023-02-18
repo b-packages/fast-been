@@ -4,21 +4,22 @@ from fast_been.utils.exceptions.http import (
     NotFoundHTTPException,
 )
 
-from . import Base
+from . import APIController as Base
+from .__macros import LOOKUP_FIELD as LOOKUP_FIELD_MACRO
 
 
 class Destroyer(Base):
 
     def __init__(self, **kwargs):
-        self.__lookup_field = kwargs.get('lookup_field')
+        self.__lookup_field = kwargs.get(LOOKUP_FIELD_MACRO)
         if self.__lookup_field is None:
             raise LookupFieldIsNotSetHTTPException()
 
     def run(self):
-        return self.destroy(self.__lookup_field)
+        return self.destroy()
 
-    def destroy(self, lookup_field):
-        obj = self.destroy_data(lookup_field)
+    def destroy(self):
+        obj = self.destroy_data(self.__lookup_field)
         if obj is None:
             raise NotFoundHTTPException()
 

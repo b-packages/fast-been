@@ -1,6 +1,6 @@
 from fast_been.utils.macros import ControllerType
 
-from . import Base
+from . import APIController as Base
 
 
 class Lister(Base):
