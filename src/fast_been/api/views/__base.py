@@ -16,7 +16,7 @@ from fast_been.utils.exceptions.http import (
     LoginRequiredHTTPException,
     AccessDeniedHTTPException,
 )
-from fast_been.utils.generators.auth.jwt import access_token
+from fast_been.utils.generators.auth.jwt import access_token as jwt_access_token
 from fast_been.utils.http.response.status.code import (
     OK as OK_HTTP_STATUS_CODE,
 )
@@ -61,11 +61,19 @@ class Base:
         self.request.beanser_pid = token_decoded[SUB_MACRO]
         self.set_access_token(pid=token_decoded[SUB_MACRO], data=token_decoded[DATA_MACRO])
 
+    __access_token = None
+
+    @property
+    def access_token(self):
+        return self.__access_token
+
     def set_access_token(self, pid: str, data: dict):
+        access_token = jwt_access_token(pid=pid, data=data)
+        self.__access_token = access_token
         self.set_cookie(
             {
                 KEY_MACRO: WWW_AUTHORIZATION_MACRO,
-                VALUE_MACRO: access_token(pid=pid, data=data),
+                VALUE_MACRO: access_token,
                 SECURE_MACRO: False,
                 HTTPONLY_MACRO: True,
             }
