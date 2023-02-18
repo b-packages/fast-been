@@ -1,24 +1,46 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Union, Optional
-from sqlalchemy.orm import Session
-import math
 
-from fast_been.utils.generators.db.id import unique_id
+from sqlalchemy.orm import Session
+
 from fast_been.conf.base_settings import BASE_SETTINGS
+from fast_been.utils.date_time import now
+from fast_been.utils.exceptions.http import (
+    RequiredInputValueHTTPException,
+    AllowNullInputValueHTTPException,
+    AllowBlankInputValueHTTPException,
+    UniqueInputValueHTTPException,
+    RegexValidatorInputValueHTTPException,
+    TypeInputValueHTTPException,
+    MaximumValueInputValueHTTPException,
+    MinimumValueInputValueHTTPException,
+    MaximumLengthInputValueHTTPException,
+    MinimumLengthInputValueHTTPException,
+    LeastOneRequiredHTTPException,
+)
+from fast_been.utils.generators.db.id import unique_id
 from fast_been.utils.schemas.controller.list import (
     OutputList as OutputListSchema,
     QueryParams as QueryParamsSchema,
 )
-from fast_been.utils.exceptions.http import *
-from fast_been.utils.date_time import now
-
-from .__macro import *
+from .__macros import (
+    NUMERIC as NUMERIC_MACRO, INTEGER as INTEGER_MACRO, POSITIVE_INTEGER as POSITIVE_INTEGER_MACRO,
+    NEGATIVE_INTEGER as NEGATIVE_INTEGER_MACRO, FLOAT as FLOAT_MACRO, POSITIVE_FLOAT as POSITIVE_FLOAT_MACRO,
+    NEGATIVE_FLOAT as NEGATIVE_FLOAT_MACRO, STRING as STRING_MACRO, LIST as LIST_MACRO,
+    DICTIONARY as DICTIONARY_MACRO, TUPLE as TUPLE_MACRO, SET as SET_MACRO, BOOLEAN as BOOLEAN_MACRO,
+    PID as PID_MACRO, DEFAULT as DEFAULT_MACRO, REQUIRED as REQUIRED_MACRO, ALLOW_NULL as ALLOW_NULL_MACRO,
+    ALLOW_BLANK as ALLOW_BLANK_MACRO, FIELD_CONTROL_OPTIONS_METER as FIELD_CONTROL_OPTIONS_METER_MACRO,
+    UNIQUE as UNIQUE_MACRO, REGEX_VALIDATOR as REGEX_VALIDATOR_MACRO, TYPE as TYPE_MACRO,
+    MAXIMUM_VALUE as MAXIMUM_VALUE_MACRO, MINIMUM_VALUE as MINIMUM_VALUE_MACRO, MAXIMUM_LENGTH as MAXIMUM_LENGTH_MACRO,
+    MINIMUM_LENGTH as MINIMUM_LENGTH_MACRO, CONVERTER as CONVERTER_MACRO,
+)
 
 
 class Base(ABC):
     model = None
     db: Session = None
-    lookup_field_name: str = PID
+    lookup_field_name: str = PID_MACRO
     input_fields: list = list()
     field_control_options: dict = dict()
     output_fields: list = list()
@@ -112,7 +134,7 @@ class Base(ABC):
 
     @staticmethod
     def __field_control_options_sort_key_func(item):
-        return FIELD_CONTROL_OPTIONS_METER[item[0]]
+        return FIELD_CONTROL_OPTIONS_METER_MACRO[item[0]]
 
     @property
     def __get_field_control_options(self):
@@ -132,37 +154,37 @@ class Base(ABC):
 
     def __default(self, key, value):
         if not value:
-            return self.__get_field_control_options[key][DEFAULT]
+            return self.__get_field_control_options[key][DEFAULT_MACRO]
         return value
 
     def __required(self, key, value):
-        if self.__get_field_control_options[key][REQUIRED] and value is None:
+        if self.__get_field_control_options[key][REQUIRED_MACRO] and value is None:
             raise RequiredInputValueHTTPException(key)
         return value
 
     def __allow_null(self, key, value):
-        if not self.__get_field_control_options[key][ALLOW_NULL] and value is None:
+        if not self.__get_field_control_options[key][ALLOW_NULL_MACRO] and value is None:
             raise AllowNullInputValueHTTPException(key)
         return value
 
     def __allow_blank(self, key, value):
-        if not self.__get_field_control_options[key][ALLOW_BLANK] and self.__is_blank(value):
+        if not self.__get_field_control_options[key][ALLOW_BLANK_MACRO] and self.__is_blank(value):
             raise AllowBlankInputValueHTTPException(key)
         return value
 
     def __unique(self, key, value):
-        if self.__get_field_control_options[key][UNIQUE] and self.retrieve_data(**{key: value}):
+        if self.__get_field_control_options[key][UNIQUE_MACRO] and self.retrieve_data(**{key: value}):
             raise UniqueInputValueHTTPException(key)
         return value
 
     def __regex_validator(self, key, value):
-        regex_validator = self.__get_field_control_options[key][REGEX_VALIDATOR]
+        regex_validator = self.__get_field_control_options[key][REGEX_VALIDATOR_MACRO]
         if not regex_validator.validate(value):
             raise RegexValidatorInputValueHTTPException(key, regex_validator.info)
         return value
 
     def __type(self, key, value):
-        type_input_value = self.__get_field_control_options[key][TYPE]
+        type_input_value = self.__get_field_control_options[key][TYPE_MACRO]
         if type(type_input_value) == str:
             if not self.__types__controller[type_input_value](value):
                 raise TypeInputValueHTTPException(key, type_input_value)
@@ -174,31 +196,31 @@ class Base(ABC):
         raise TypeInputValueHTTPException(key, str(type_input_value))
 
     def __maximum_value(self, key, value):
-        maximum_value = self.__get_field_control_options[key][MAXIMUM_VALUE]
+        maximum_value = self.__get_field_control_options[key][MAXIMUM_VALUE_MACRO]
         if not (type(value) in [int, float] and value <= maximum_value):
             raise MaximumValueInputValueHTTPException(key, maximum_value)
         return value
 
     def __minimum_value(self, key, value):
-        minimum_value = self.__get_field_control_options[key][MINIMUM_VALUE]
+        minimum_value = self.__get_field_control_options[key][MINIMUM_VALUE_MACRO]
         if not (type(value) in [int, float] and minimum_value <= value):
             raise MinimumValueInputValueHTTPException(key, minimum_value)
         return value
 
     def __maximum_length(self, key, value):
-        maximum_length = self.__get_field_control_options[key][MAXIMUM_LENGTH]
+        maximum_length = self.__get_field_control_options[key][MAXIMUM_LENGTH_MACRO]
         if not (type(value) in [str, list, dict, tuple, set] and len(value) <= maximum_length):
             raise MaximumLengthInputValueHTTPException(key, maximum_length)
         return value
 
     def __minimum_length(self, key, value):
-        minimum_length = self.__get_field_control_options[key][MINIMUM_LENGTH]
+        minimum_length = self.__get_field_control_options[key][MINIMUM_LENGTH_MACRO]
         if not (type(value) in [str, list, dict, tuple, set] and minimum_length <= len(value)):
             raise MinimumLengthInputValueHTTPException(key, minimum_length)
         return value
 
     def __converter(self, key, value):
-        converter = self.__get_field_control_options[key][CONVERTER]
+        converter = self.__get_field_control_options[key][CONVERTER_MACRO]
         return converter(value)
 
     def __least_one_required(self, input_data: dict):
@@ -223,19 +245,19 @@ class Base(ABC):
         if self.__types__controller_:
             return self.__types__controller_
         self.__types__controller_ = {
-            NUMERIC: self.__is_numeric,
-            INTEGER: self.__is_integer,
-            POSITIVE_INTEGER: self.__is_positive_integer,
-            NEGATIVE_INTEGER: self.__is_negative_integer,
-            FLOAT: self.__is_float,
-            POSITIVE_FLOAT: self.__is_positive_float,
-            NEGATIVE_FLOAT: self.__is_negative_float,
-            STRING: self.__is_string,
-            LIST: self.__is_list,
-            DICTIONARY: self.__is_dictionary,
-            TUPLE: self.__is_tuple,
-            SET: self.__is_set,
-            BOOLEAN: self.__is_boolean,
+            NUMERIC_MACRO: self.__is_numeric,
+            INTEGER_MACRO: self.__is_integer,
+            POSITIVE_INTEGER_MACRO: self.__is_positive_integer,
+            NEGATIVE_INTEGER_MACRO: self.__is_negative_integer,
+            FLOAT_MACRO: self.__is_float,
+            POSITIVE_FLOAT_MACRO: self.__is_positive_float,
+            NEGATIVE_FLOAT_MACRO: self.__is_negative_float,
+            STRING_MACRO: self.__is_string,
+            LIST_MACRO: self.__is_list,
+            DICTIONARY_MACRO: self.__is_dictionary,
+            TUPLE_MACRO: self.__is_tuple,
+            SET_MACRO: self.__is_set,
+            BOOLEAN_MACRO: self.__is_boolean,
         }
         return self.__types__controller_
 
@@ -296,18 +318,18 @@ class Base(ABC):
         if self.__controllers_:
             return self.__controllers_
         self.__controllers_ = {
-            DEFAULT: self.__default,
-            REQUIRED: self.__required,
-            ALLOW_NULL: self.__allow_null,
-            ALLOW_BLANK: self.__allow_blank,
-            TYPE: self.__type,
-            UNIQUE: self.__unique,
-            MAXIMUM_VALUE: self.__maximum_value,
-            MINIMUM_VALUE: self.__minimum_value,
-            MAXIMUM_LENGTH: self.__maximum_length,
-            MINIMUM_LENGTH: self.__minimum_length,
-            REGEX_VALIDATOR: self.__regex_validator,
-            CONVERTER: self.__converter,
+            DEFAULT_MACRO: self.__default,
+            REQUIRED_MACRO: self.__required,
+            ALLOW_NULL_MACRO: self.__allow_null,
+            ALLOW_BLANK_MACRO: self.__allow_blank,
+            TYPE_MACRO: self.__type,
+            UNIQUE_MACRO: self.__unique,
+            MAXIMUM_VALUE_MACRO: self.__maximum_value,
+            MINIMUM_VALUE_MACRO: self.__minimum_value,
+            MAXIMUM_LENGTH_MACRO: self.__maximum_length,
+            MINIMUM_LENGTH_MACRO: self.__minimum_length,
+            REGEX_VALIDATOR_MACRO: self.__regex_validator,
+            CONVERTER_MACRO: self.__converter,
         }
         return self.__controllers_
 
@@ -328,7 +350,7 @@ class Base(ABC):
 
     def __create_base(self, **kwargs):
         inst = self.model(**kwargs)
-        inst.pid = kwargs.get(PID) or unique_id()
+        inst.pid = kwargs.get(PID_MACRO) or unique_id()
         inst.created_datetime = now()
         inst.previous_state = None
         inst.deleted = False
