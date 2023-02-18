@@ -1,6 +1,6 @@
 from fast_been.utils.http.response.status.code import NO_CONTENT
 
-from . import Base
+from . import APIView as Base
 
 
 class Destroyer(Base):

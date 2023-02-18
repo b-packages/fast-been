@@ -1,4 +1,4 @@
-from . import Base
+from . import APIView as Base
 
 
 class Retriever(Base):

@@ -1,6 +1,6 @@
 from fast_been.utils.http.response.status.code import CREATED
 
-from . import Base
+from . import APIView as Base
 
 
 class Creator(Base):

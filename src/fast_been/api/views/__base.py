@@ -1,36 +1,30 @@
-from datetime import datetime
+from fastapi import Request
+from fastapi.responses import JSONResponse, Response
 from jose import jwt
 
-from fastapi.responses import JSONResponse, Response
-from fastapi import Request
-
-from fast_been.utils.generators.auth.jwt import access_token
-from fast_been.utils.http.response.status.code import (
-    OK as OK_HTTP_STATUS_CODE,
-)
-from fast_been.conf.base_settings import BASE_SETTINGS
 from fast_been.__macros import (
     WWW_AUTHORIZATION as WWW_AUTHORIZATION_MACRO,
     VALUE as VALUE_MACRO,
     SECURE as SECURE_MACRO,
     HTTPONLY as HTTPONLY_MACRO,
     KEY as KEY_MACRO,
-    EXP as EXP_MACRO,
     SUB as SUB_MACRO,
     DATA as DATA_MACRO,
 )
+from fast_been.conf.base_settings import BASE_SETTINGS
 from fast_been.utils.exceptions.http import (
     LoginRequiredHTTPException,
-    TokenIsNotAcceptedHTTPException,
-    TokenHasExpiredHTTPException,
     AccessDeniedHTTPException,
+)
+from fast_been.utils.generators.auth.jwt import access_token
+from fast_been.utils.http.response.status.code import (
+    OK as OK_HTTP_STATUS_CODE,
 )
 from fast_been.utils.schemas.http import (
     Request as FastBeenRequest,
     Response as FastBeenResponse,
     Cookie as FastBeenCookie,
 )
-from fast_been.utils.date_time import now
 
 JWT_SECRET_KEY = BASE_SETTINGS.JWT.SECRET_KEY
 JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
@@ -92,7 +86,7 @@ class Base:
     def run(self):
         rslt = self.get_controller.run()
         self.set_response_content(rslt)
-        return self.response
+        return self.response()
 
     __controller_instance = None
 
@@ -105,7 +99,6 @@ class Base:
 
     __response: FastBeenResponse = FastBeenResponse()
 
-    @property
     def response(self):
         response = JSONResponse if self.__response.content else Response
         rslt = response(
