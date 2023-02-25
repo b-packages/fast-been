@@ -14,9 +14,8 @@ PAGE_SIZE = 'page_size'
 class QueryParams(BaseModel):
     def __init__(self, **kwargs):
         # Validate: Filters
-        kwargs[FILTERS] = kwargs[FILTERS] if kwargs.get(FILTER_SET) and kwargs.get(FILTERS) else {}
         tmp = {}
-        for k, v in kwargs[FILTERS].items():
+        for k, v in kwargs.items():
             if k in kwargs[FILTER_SET]:
                 tmp[k] = v
         kwargs[FILTERS] = tmp if len(tmp) else None
