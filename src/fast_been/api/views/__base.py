@@ -1,5 +1,6 @@
-from fastapi import Request
 from fastapi.responses import JSONResponse, Response
+from starlette.status import HTTP_200_OK
+from fastapi import Request
 from jose import jwt
 
 from fast_been.__macros import (
@@ -17,9 +18,6 @@ from fast_been.utils.exceptions.http import (
     AccessDeniedHTTPException,
 )
 from fast_been.utils.generators.auth.jwt import access_token as jwt_access_token
-from fast_been.utils.http.response.status.code import (
-    OK as OK_HTTP_STATUS_CODE,
-)
 from fast_been.utils.schemas.http import (
     Request as FastBeenRequest,
     Response as FastBeenResponse,
@@ -32,7 +30,7 @@ JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
 
 class Base:
     controller_class = None
-    expected_status_code = OK_HTTP_STATUS_CODE
+    expected_status_code = HTTP_200_OK
     need_authentication = False
 
     def __init__(self, **kwargs):
