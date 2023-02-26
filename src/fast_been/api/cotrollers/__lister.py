@@ -5,7 +5,7 @@ from . import APIController as Base
 
 class Lister(Base):
 
-    def __init__(self, query_params):
+    def __init__(self, query_params, **kwargs):
         self.__query_params = query_params
 
     def run(self) -> dict:

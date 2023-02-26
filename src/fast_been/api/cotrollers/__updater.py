@@ -9,7 +9,7 @@ from . import APIController as Base
 
 class Updater(Base):
 
-    def __init__(self, lookup_field, input_data):
+    def __init__(self, lookup_field, input_data, **kwargs):
         self.__lookup_field = lookup_field
         if self.__lookup_field is None:
             raise LookupFieldIsNotSetHTTPException()

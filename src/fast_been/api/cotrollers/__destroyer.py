@@ -8,7 +8,7 @@ from . import APIController as Base
 
 class Destroyer(Base):
 
-    def __init__(self, lookup_field):
+    def __init__(self, lookup_field, **kwargs):
         self.__lookup_field = lookup_field
         if self.__lookup_field is None:
             raise LookupFieldIsNotSetHTTPException()

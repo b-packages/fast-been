@@ -5,7 +5,7 @@ from . import APIController as Base
 
 class Creator(Base):
 
-    def __init__(self, input_data):
+    def __init__(self, input_data, **kwargs):
         self.__input_data = input_data
         if self.__input_data is None:
             raise ThereIsNoInputDataToRegisterHTTPException()
