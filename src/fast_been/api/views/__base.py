@@ -1,25 +1,12 @@
-from fastapi.responses import JSONResponse, Response
-from starlette.status import HTTP_200_OK
-from fastapi import Request
-from jose import jwt
+from typing import Optional, Any
 
-from fast_been.__macros import (
-    WWW_AUTHORIZATION as WWW_AUTHORIZATION_MACRO,
-    VALUE as VALUE_MACRO,
-    SECURE as SECURE_MACRO,
-    HTTPONLY as HTTPONLY_MACRO,
-    KEY as KEY_MACRO,
-    SUB as SUB_MACRO,
-    DATA as DATA_MACRO,
-)
+from fastapi.responses import JSONResponse, Response
+from starlette.datastructures import QueryParams
+from starlette.requests import Request
+from starlette.status import HTTP_200_OK
+
 from fast_been.conf.base_settings import BASE_SETTINGS
-from fast_been.utils.exceptions.http import (
-    LoginRequiredHTTPException,
-    AccessDeniedHTTPException,
-)
-from fast_been.utils.generators.auth.jwt import access_token as jwt_access_token
 from fast_been.utils.schemas.http import (
-    Request as FastBeenRequest,
     Response as FastBeenResponse,
     Cookie as FastBeenCookie,
 )
@@ -31,54 +18,12 @@ JWT_ALGORITHM = BASE_SETTINGS.JWT.ALGORITHM
 class Base:
     controller_class = None
     expected_status_code = HTTP_200_OK
-    need_authentication = False
 
     def __init__(self, **kwargs):
-        self.__set_request(**kwargs)
-        self.__access_checked()
-
-    request: FastBeenRequest
-
-    def __set_request(self, **kwargs):
-        self.request = FastBeenRequest(**kwargs)
-
-    def __access_checked(self):
-        if not self.need_authentication:
-            return
-        request: Request = self.request.base_request
-        if WWW_AUTHORIZATION_MACRO not in request.cookies:
-            raise LoginRequiredHTTPException()
-        try:
-            token_decoded = jwt.decode(
-                request.cookies[WWW_AUTHORIZATION_MACRO],
-                key=JWT_SECRET_KEY,
-                algorithms=JWT_ALGORITHM,
-            )
-        except:
-            raise AccessDeniedHTTPException()
-        self.request.beanser_pid = token_decoded[SUB_MACRO]
-        self.set_access_token(pid=token_decoded[SUB_MACRO], data=token_decoded[DATA_MACRO])
-
-    __access_token = None
-
-    @property
-    def access_token(self):
-        return self.__access_token
-
-    def set_access_token(self, pid: str, data: dict):
-        access_token = jwt_access_token(pid=pid, data=data)
-        self.__access_token = access_token
-        self.set_cookie(
-            {
-                KEY_MACRO: WWW_AUTHORIZATION_MACRO,
-                VALUE_MACRO: access_token,
-                SECURE_MACRO: False,
-                HTTPONLY_MACRO: True,
-            }
-        )
-
-    def delete_access_token(self):
-        self.delete_cookie(WWW_AUTHORIZATION_MACRO)
+        self.request: Optional[Request] = kwargs.get('request')
+        self.query_params: Optional[QueryParams] = self.request.query_params if self.request else {}
+        self.input_data: Optional[dict] = kwargs.get('input_data')
+        self.lookup_field: Any = kwargs.get('lookup_field')
 
     def set_cookie(self, value: dict):
         self.__response.cookies.append(FastBeenCookie(**value))
@@ -91,7 +36,7 @@ class Base:
 
     def run(self):
         rslt = self.get_controller.run()
-        self.set_response_content(rslt)
+        self.__response.content = rslt
         return self.response()
 
     __controller_instance = None
@@ -100,7 +45,9 @@ class Base:
     def get_controller(self):
         if self.__controller_instance:
             return self.__controller_instance
-        self.__controller_instance = self.controller_class(**self.request.dict())
+        self.__controller_instance = self.controller_class(
+            request=self.request, input_data=self.input_data,
+            lookup_field=self.lookup_field, query_params=self.query_params)
         return self.__controller_instance
 
     __response: FastBeenResponse = FastBeenResponse()
@@ -117,18 +64,3 @@ class Base:
         for c in self.__response.cookies:
             rslt.set_cookie(**c.dict())
         return rslt
-
-    def set_response_status_code(self, value):
-        self.__response.status_code = value
-
-    def set_response_content(self, value):
-        self.__response.content = value
-
-    def set_response_headers(self, value):
-        self.__response.headers = value
-
-    def set_response_media_type(self, value):
-        self.__response.media_type = value
-
-    def set_response_background(self, value):
-        self.__response.background = value

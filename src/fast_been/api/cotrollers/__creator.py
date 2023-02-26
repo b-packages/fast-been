@@ -1,16 +1,12 @@
+from fast_been.utils.exceptions.http import ThereIsNoInputDataToRegisterHTTPException
 from fast_been.utils.macros import ControllerType
-from fast_been.utils.exceptions.http import (
-    ThereIsNoInputDataToRegisterHTTPException,
-)
-
 from . import APIController as Base
-from .__macros import INPUT_DATA as INPUT_DATA_MACRO
 
 
 class Creator(Base):
 
-    def __init__(self, **kwargs):
-        self.__input_data = kwargs.get(INPUT_DATA_MACRO)
+    def __init__(self, input_data):
+        self.__input_data = input_data
         if self.__input_data is None:
             raise ThereIsNoInputDataToRegisterHTTPException()
         self.instance = None
