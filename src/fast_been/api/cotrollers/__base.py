@@ -50,7 +50,7 @@ class Base(ABC):
     order_set = []
 
     @abstractmethod
-    def run(self):
+    def run(self, **kwargs):
         pass
 
     @abstractmethod

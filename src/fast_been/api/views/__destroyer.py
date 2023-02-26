@@ -4,3 +4,7 @@ from . import APIView as Base
 
 class Destroyer(Base):
     expected_status_code = HTTP_204_NO_CONTENT
+
+    def run(self, lookup_field):
+        self.content = self.get_controller.run(lookup_field=lookup_field)
+        return self.just_response()
