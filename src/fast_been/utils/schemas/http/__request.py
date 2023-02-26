@@ -29,8 +29,8 @@ class Request(BaseModel):
     # query params
     page: Optional[int]
     page_size: Optional[int]
-    filters: Optional[list]
+    filters: Optional[dict]
     ordering: Optional[list]
-    search: Optional[list]
+    search: Any
     # base request
     base_request: Any
