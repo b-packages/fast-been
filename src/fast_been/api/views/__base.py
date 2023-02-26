@@ -15,9 +15,8 @@ class Base(ABC):
     expected_status_code = HTTP_200_OK
     content = None
 
-    def __init__(self, request: Optional[Request], response: Optional[Response]):
+    def __init__(self, request: Optional[Request]):
         self.request = request
-        self.response = response
 
     @abstractmethod
     def run(self, **kwargs):
@@ -32,9 +31,9 @@ class Base(ABC):
         self.__controller_instance = self.controller_class()
         return self.__controller_instance
 
-    def just_response(self):
-        response = JSONResponse if self.content else Response
-        rslt = response(
+    def response(self):
+        rsp = JSONResponse if self.content else Response
+        rslt = rsp(
             status_code=self.expected_status_code,
             content=self.content,
         )

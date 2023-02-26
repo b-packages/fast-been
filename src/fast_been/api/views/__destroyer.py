@@ -7,4 +7,4 @@ class Destroyer(Base):
 
     def run(self, lookup_field):
         self.content = self.get_controller.run(lookup_field=lookup_field)
-        return self.just_response()
+        return self.response()

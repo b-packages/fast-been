@@ -7,4 +7,4 @@ class Creator(Base):
 
     def run(self, input_data: dict):
         self.content = self.get_controller.run(input_data=input_data)
-        return self.just_response()
+        return self.response()
