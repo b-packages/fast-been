@@ -40,7 +40,7 @@ from .__macros import (
 class Base(ABC):
     model = None
     db: Session = None
-    lookup_field_name: str = PID_MACRO
+    lookup_fields_name: list = [PID_MACRO]
     input_fields: list = list()
     field_control_options: dict = dict()
     output_fields: list = list()
@@ -78,8 +78,22 @@ class Base(ABC):
                 rslt[key] = value
         return rslt
 
-    def retrieve_data(self, **kwargs):
-        obj = self.__retrieve_base(**kwargs)
+    __lookup_fields: dict = None
+
+    @property
+    def lookup_fields(self):
+        return self.__lookup_fields or {}
+
+    @lookup_fields.setter
+    def lookup_fields(self, value: dict):
+        tmp = {}
+        for k, v in value.items():
+            if k in self.lookup_fields_name:
+                tmp[k] = v
+        self.__lookup_fields = tmp
+
+    def retrieve_data(self):
+        obj = self.__retrieve_base(**self.lookup_fields)
         return obj
 
     def create_data(self, **kwargs):
@@ -87,8 +101,8 @@ class Base(ABC):
         obj = self.__save_base(inst)
         return obj
 
-    def update_data(self, lookup_field, **kwargs):
-        obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
+    def update_data(self, **kwargs):
+        obj = self.__retrieve_base(**self.lookup_fields)
         if obj is None:
             return None
         if not len(kwargs):
@@ -100,8 +114,8 @@ class Base(ABC):
         obj = self.__save_base(inst)
         return obj
 
-    def destroy_data(self, lookup_field):
-        obj = self.__retrieve_base(**{self.lookup_field_name: lookup_field})
+    def destroy_data(self):
+        obj = self.__retrieve_base(**self.lookup_fields)
         if obj is None:
             return None
         data = obj.to_dict()
@@ -173,7 +187,7 @@ class Base(ABC):
         return value
 
     def __unique(self, key, value):
-        if self.__get_field_control_options[key][UNIQUE_MACRO] and self.retrieve_data(**{key: value}):
+        if self.__get_field_control_options[key][UNIQUE_MACRO] and self.__retrieve_base(**{key: value}):
             raise UniqueInputValueHTTPException(key)
         return value
 

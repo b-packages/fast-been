@@ -7,17 +7,14 @@ from . import APIController as Base
 
 class Retriever(Base):
 
-    def __init__(self):
-        self.__lookup_field = None
-
-    def run(self, lookup_field) -> dict:
-        self.__lookup_field = lookup_field
-        if self.__lookup_field is None:
+    def run(self, lookup_fields) -> dict:
+        self.lookup_fields = lookup_fields
+        if not len(self.lookup_fields):
             raise LookupFieldIsNotSetHTTPException()
         return self.retrieve()
 
     def retrieve(self) -> dict:
-        obj_ = self.retrieve_data(**{self.lookup_field_name: self.__lookup_field})
+        obj_ = self.retrieve_data()
         if not obj_:
             raise NotFoundHTTPException()
         outputs_ = self.output_data(**obj_.to_dict())
