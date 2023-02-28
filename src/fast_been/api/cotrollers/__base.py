@@ -74,7 +74,7 @@ class Base(ABC):
     def output_data(self, **kwargs):
         rslt = {}
         for key, value in kwargs.items():
-            if key in self.output_fields and value:
+            if key in self.output_fields and value is not None:
                 rslt[key] = value
         return rslt
 
