@@ -187,7 +187,8 @@ class Base(ABC):
         return value
 
     def __unique(self, key, value):
-        if self.__get_field_control_options[key][UNIQUE_MACRO] and self.__retrieve_base(**{key: value}):
+        if self.__get_field_control_options[key][UNIQUE_MACRO] and \
+                len(self.__queryset.exclude(**self.lookup_fields).filter_by(**{key: value})):
             raise UniqueInputValueHTTPException(key)
         return value
 
