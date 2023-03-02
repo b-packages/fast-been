@@ -187,9 +187,10 @@ class Base(ABC):
         return value
 
     def __unique(self, key, value):
-        if self.__get_field_control_options[key][UNIQUE_MACRO] and \
-                len(self.__queryset.exclude(**self.lookup_fields).filter_by(**{key: value})):
-            raise UniqueInputValueHTTPException(key)
+        if self.__get_field_control_options[key][UNIQUE_MACRO]:
+            objs = self.__queryset.filter_by(**{key: value})
+            if len(objs):
+                raise UniqueInputValueHTTPException(key)
         return value
 
     def __regex_validator(self, key, value):
