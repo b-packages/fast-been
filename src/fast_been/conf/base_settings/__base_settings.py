@@ -10,7 +10,7 @@ class BaseSettings(BSettings):
     DEBUG: bool = True
     SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
-    UTC_TIME = True
+    UTC_TIME: bool = True
 
     JWT: JWTSetting = JWTSetting()
     PAGINATION: PaginationSetting = PaginationSetting()
