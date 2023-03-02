@@ -6,7 +6,7 @@ from .__pagination import PaginationSetting
 from .__mail import MailSetting
 
 
-class __BaseSettings(BSettings):
+class BaseSettings(BSettings):
     DEBUG: bool = True
     SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
@@ -22,8 +22,8 @@ class __BaseSettings(BSettings):
 
 
 @lru_cache()
-def __get_settings():
-    return __BaseSettings()
+def get_settings():
+    return BaseSettings()
 
 
-BASE_SETTINGS = __get_settings()
+BASE_SETTINGS = get_settings()
