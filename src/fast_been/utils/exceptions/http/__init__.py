@@ -16,3 +16,4 @@ from .__login_required import LoginRequiredHTTPException
 from .__token_is_not_accepted import TokenIsNotAcceptedHTTPException
 from .__token_has_expired import TokenHasExpiredHTTPException
 from .__access_denied import AccessDeniedHTTPException
+from .__information_expired import InformationExpiredHTTPException
