@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fast_been',
-    version='1.02',
+    version='1.03',
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
@@ -11,10 +11,10 @@ setup(
     url='https://github.com/b-packages/fast-been.git',
     keywords='fast_been fastapi',
     install_requires=[
-        # 'fastapi',
-        # 'pydantic',
-        # 'SQLAlchemy',
-        # 'python-jose',
-        # 'passlib',
+        'fastapi',
+        'pydantic',
+        'SQLAlchemy',
+        'python-jose',
+        'passlib',
     ],
 )
