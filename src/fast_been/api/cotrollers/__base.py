@@ -18,6 +18,7 @@ from fast_been.utils.exceptions.http import (
     MaximumLengthInputValueHTTPException,
     MinimumLengthInputValueHTTPException,
     LeastOneRequiredHTTPException,
+    SelectFromBelowListHTTPException,
 )
 from fast_been.utils.generators.db.id import unique_id
 from fast_been.utils.schemas.controller.list import (
@@ -33,7 +34,7 @@ from .__macros import (
     ALLOW_BLANK as ALLOW_BLANK_MACRO, FIELD_CONTROL_OPTIONS_METER as FIELD_CONTROL_OPTIONS_METER_MACRO,
     UNIQUE as UNIQUE_MACRO, REGEX_VALIDATOR as REGEX_VALIDATOR_MACRO, TYPE as TYPE_MACRO,
     MAXIMUM_VALUE as MAXIMUM_VALUE_MACRO, MINIMUM_VALUE as MINIMUM_VALUE_MACRO, MAXIMUM_LENGTH as MAXIMUM_LENGTH_MACRO,
-    MINIMUM_LENGTH as MINIMUM_LENGTH_MACRO, CONVERTER as CONVERTER_MACRO,
+    MINIMUM_LENGTH as MINIMUM_LENGTH_MACRO, CONVERTER as CONVERTER_MACRO, PICK_LIST as PICK_LIST_MACRO
 )
 
 
@@ -242,6 +243,12 @@ class Base(ABC):
         converter = self.__get_field_control_options[key][CONVERTER_MACRO]
         return converter(value)
 
+    def __pick_list(self, key, value):
+        pick_list = self.__get_field_control_options[key][PICK_LIST_MACRO]
+        if value not in pick_list:
+            raise SelectFromBelowListHTTPException(key, pick_list)
+        return value
+
     def __least_one_required(self, input_data: dict):
         if self.least_one_required is None:
             return input_data
@@ -349,6 +356,7 @@ class Base(ABC):
             MINIMUM_LENGTH_MACRO: self.__minimum_length,
             REGEX_VALIDATOR_MACRO: self.__regex_validator,
             CONVERTER_MACRO: self.__converter,
+            PICK_LIST_MACRO: self.__pick_list,
         }
         return self.__controllers_
 
