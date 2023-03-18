@@ -190,7 +190,7 @@ class Base(ABC):
     def __unique(self, key, value):
         if self.__get_field_control_options[key][UNIQUE_MACRO]:
             objs = self.__queryset.filter_by(**{key: value}).all()
-            obj = self.__queryset.filter_by(**self.lookup_fields).first()
+            obj = self.__queryset.filter_by(**self.lookup_fields).first() if self.lookup_fields else None
             if obj in objs:
                 objs.remove(obj)
             if len(objs):
