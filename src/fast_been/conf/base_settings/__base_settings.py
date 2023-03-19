@@ -11,6 +11,7 @@ class BaseSettings(BSettings):
     SECRET_KEY: str = '********'
     SQLALCHEMY_DATABASE_URL: str = 'sqlite:///./db.sqlite3'
     UTC_TIME: bool = True
+    LIMITER_DEFAULT_TIMES: int = 100  # minutes
 
     JWT: JWTSetting = JWTSetting()
     PAGINATION: PaginationSetting = PaginationSetting()

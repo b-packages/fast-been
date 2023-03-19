@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fast_been',
-    version='1.04',
+    version='1.05',
     license='BEENSI',
     author='nvd',
     author_email='navidsoleymani@ymail.com',
@@ -16,5 +16,6 @@ setup(
         'SQLAlchemy',
         'python-jose',
         'passlib',
+        'slowapi',
     ],
 )
