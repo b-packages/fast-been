@@ -29,10 +29,10 @@ class QueryParams(BaseModel):
         kwargs[ORDERING] = tmp if len(tmp) else None
         kwargs.pop(ORDER_SET)
         # Validate: page
-        tmp = kwargs[PAGE] if kwargs.get(PAGE) else 0
+        tmp = kwargs[PAGE] if int(kwargs.get(PAGE)) else 0
         kwargs[PAGE] = tmp if 0 < tmp else BASE_SETTINGS.PAGINATION.DEFAULT_START_PAGE_NUMBER
         # Validate: page_size
-        tmp = kwargs[PAGE_SIZE] if kwargs.get(PAGE_SIZE) else 0
+        tmp = kwargs[PAGE_SIZE] if int(kwargs.get(PAGE_SIZE)) else 0
         kwargs[PAGE_SIZE] = tmp if 0 < tmp else BASE_SETTINGS.PAGINATION.PAGE_SIZE
         super(QueryParams, self).__init__(**kwargs)
 
