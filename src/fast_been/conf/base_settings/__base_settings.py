@@ -15,7 +15,7 @@ class BaseSettings(BSettings):
 
     JWT: JWTSetting = JWTSetting()
     PAGINATION: PaginationSetting = PaginationSetting()
-    MAIL: MailSetting = MailSetting()
+#     MAIL: MailSetting = MailSetting()
 
     class Config:
         env_file = '.env'
