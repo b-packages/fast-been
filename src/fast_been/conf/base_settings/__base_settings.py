@@ -17,9 +17,9 @@ class BaseSettings(BSettings):
     PAGINATION: PaginationSetting = PaginationSetting()
     MAIL: MailSetting = MailSetting()
 
-#     class Config:
-#         env_file = '.env'
-#         env_file_encoding = 'utf-8'
+    class Config:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
 
 
 @lru_cache()
